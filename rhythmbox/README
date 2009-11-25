@@ -1,0 +1,10 @@
+Zeitgeist plugin for rhythmbox
+==============================
+
+To use this plugin run
+  $ mkdir -p ~/.gnome2/rhythmbox/plugins
+  $ cd mkdir -p ~/.gnome2/rhythmbox/plugins
+  $ ln -s <path to zeitgeist dataprovider branch>/rhythmbox zeitgeist_plugin
+  
+To get some debugging output of this plugin start rhythmbox with
+  $ rhythmbox -D Zeitgeist
