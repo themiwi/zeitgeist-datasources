@@ -21,7 +21,7 @@ import eog
 import gobject
 import time
 
-from zeitgeist.dbusutils import ZeitgeistClient
+from zeitgeist.client import ZeitgeistClient
 from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
 
 try:
