@@ -21,10 +21,6 @@ import gedit
 import sys
 import time
 
-"-------------------------",
-print sys.path
-"-------------------------",
-
 from zeitgeist.client import ZeitgeistClient
 from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
 
@@ -51,14 +47,15 @@ class ZeitgeistLogic:
 
 	def TabRemovedHandler(self, window, tab):
 		doc = tab.get_document()
-		timestamp = time.time()
-		print "tab removed", timestamp, doc.get_uri()
+		print "tab removed", doc.get_uri()
+		self.SendToZeitgeist(doc, Interpretation.CLOSE_EVENT)
 		self.docs = self._window.get_documents()
 
 	def TabChangedHandler(self, window, tab):
 		doc = tab.get_document()
 		if self.docs.count(doc) == 0:
 			print "loaded new document ", doc.get_uri()
+			self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
 			doc.connect("saved", self.SaveDocHandler)	
 		else:		
 			print "tab changed", doc.get_uri()
@@ -68,24 +65,27 @@ class ZeitgeistLogic:
 	def SaveDocHandler(self, doc, data):
 		print "saved document", doc.get_uri()
 		self.docs = self._window.get_documents()
+		self.SendToZeitgeist(doc, Interpretation.SAVE_EVENT)
 		print "***", self.docs
 
-	def SendToZeitgeist(self, uri, timestamp, event):
-		subject = Subject.new_for_values(
-			uri=file_obj.get_uri(),
-			interpretation=unicode(Interpretation.IMAGE),
-			manifestation=unicode(Manifestation.FILE),
-			origin=file_obj.get_parent().get_uri(),
-			mimetype="", #TBD	
-		)
-		event = Event.new_for_values(
-			timestamp=int(time.time()*1000),
-			interpretation=unicode(Interpretation.VISIT_EVENT),
-			manifestation=unicode(Manifestation.USER_ACTIVITY),
-			actor="application://eog.desktop",
-			subjects=[subject,]
-		)
-		CLIENT.insert_event(event)
+	def SendToZeitgeist(self, doc, event):
+		if doc.get_uri():
+			subject = Subject.new_for_values(
+				uri=doc.get_uri(),
+				text=doc.get_short_name_for_display (),
+				interpretation=unicode(Interpretation.DOCUMENT),
+				manifestation=unicode(Manifestation.FILE),
+				origin=doc.get_uri().rpartition("/")[0],
+				mimetype=doc.get_mime_type(), #TBD	
+			)
+			event = Event.new_for_values(
+				timestamp=int(time.time()*1000),
+				interpretation=unicode(event),
+				manifestation=unicode(Manifestation.USER_ACTIVITY),
+				actor="application://gedit.desktop",
+				subjects=[subject,]
+			)
+			CLIENT.insert_event(event)
 
 class ZeitgeistPlugin(gedit.Plugin):
 	def __init__(self):
