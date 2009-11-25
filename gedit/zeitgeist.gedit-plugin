@@ -1,6 +1,6 @@
 [Gedit Plugin]
 Loader=python
-Module=zeitgeist
+Module=zeitgeist_plugin
 IAge=2
 Name=Zeitgeist
 Description=Inform Zeitgeist about your activity
