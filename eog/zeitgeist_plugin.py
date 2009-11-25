@@ -21,14 +21,14 @@ import eog
 import gobject
 import time
 
-from zeitgeist.dbusutils import ZeitgeistDBusInterface
+from zeitgeist.dbusutils import ZeitgeistClient
 from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
 
 try:
-    IFACE = ZeitgeistDBusInterface()
+    CLIENT = ZeitgeistClient()
 except RuntimeError, e:
     print "Unable to connect to Zeitgeist, won't send events. Reason: '%s'" %e
-    IFACE = None
+    CLIENT = None
 
 class ZeitgeistPlugin(eog.Plugin):
 
@@ -38,7 +38,7 @@ class ZeitgeistPlugin(eog.Plugin):
         self.__run = True
 
     def activate(self, window):
-        if IFACE is not None:
+        if CLIENT is not None:
             gobject.timeout_add(500, self.get_image, window)
         window.connect("destroy", self.deactivate, window)
     
@@ -61,7 +61,7 @@ class ZeitgeistPlugin(eog.Plugin):
                 actor="application://eog.desktop",
                 subjects=[subject,]
             )
-            IFACE.InsertEvents([event,])
+            CLIENT.insert_event(event)
         return self.__run
         
     def deactivate(self, *args):
