@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE overlay SYSTEM "chrome://zeitgeist/locale/overlay.dtd">
+<overlay id="zeitgeist-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="overlay.js"/>
+  <script src="ff-overlay.js"/>
+
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="zeitgeist-strings" src="chrome://zeitgeist/locale/overlay.properties"/>
+  </stringbundleset>
+
+</overlay>

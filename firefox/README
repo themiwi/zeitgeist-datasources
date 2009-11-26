@@ -1,0 +1,27 @@
+Zeitgeist extension for Firefox
+===============================
+
+
+How to run this extension
+*************************
+
+Two possible ways:
+
+1.) run `make` and open the resulting `Zeitgeist-nightly.xpi` with firefox
+
+2.) First create a file called .moz_profile which contains the path to
+    the configuration directory of the firefox profile you would like
+    to use for testing this extension.
+        echo /home/<username>/.mozilla/firefox/<random>.<profile name> > .moz_profile
+    This step is optional, per default the 'default' profile for the
+    current user is used.
+    The second step is a simple as running
+        make devel
+    This will register the current branch as extension. If zeitgeist is
+    installed system-wide, this command will get the source of zeitgeist
+    and symlink the containing zeitgeist modul properly.
+    
+    
+This extension needs either a running zeitgeist-daemon or a
+'org.gnome.zeitgeist.service' in the configuration env of the
+dbus service.

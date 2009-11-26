@@ -1,0 +1,226 @@
+#!/usr/bin/env python
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of the GNU General Public License as published by
+#       the Free Software Foundation; either version 2 of the License, or
+#       (at your option) any later version.
+#       
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#       GNU General Public License for more details.
+#       
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#       MA 02110-1301, USA.
+#
+#       Copyright 2009 Markus Korn <thekorn@gmx.de>
+#
+
+import sys
+import time
+import logging
+import json
+
+from optparse import OptionParser
+
+def vararg_callback(option, opt_str, value, parser):
+    assert value is None
+    value = []
+
+    def floatable(str):
+        try:
+            float(str)
+            return True
+        except ValueError:
+            return False
+
+    for arg in parser.rargs:
+        # stop on --foo like options
+        if arg[:2] == "--" and len(arg) > 2:
+            break
+        # stop on -a, but not on -3 or -3.0
+        if arg[:1] == "-" and len(arg) > 1 and not floatable(arg):
+            break
+        value.append(arg)
+
+    del parser.rargs[:len(value)]
+    setattr(parser.values, option.dest, value)
+    
+    
+def single_insert(location, title, tags=None):
+    # lazy import to catch the error
+    from zeitgeist.dbusutils import DBusInterface
+        
+    tags = tags or list()
+    logging.debug("Zeitgeist extension for firefox is sending a visit event '%s'" %location)
+    
+    iface = DBusInterface()
+    try:
+        version = iface.version()
+    except:
+        version = (0, 0, 0)
+    
+    if version < (0, 3, 0):
+        logging.debug("using zeitgeist version %r < 0.3" %version)
+        item = {
+            "timestamp": int(time.time()),
+            "uri": location.decode("UTF-8"),
+            "text": title.decode("UTF-8"),
+            "source": u"Web History",
+            "content": u"Web",
+            "use": u"http://gnome.org/zeitgeist/schema/Event#link",
+            "mimetype": u"text/html", # TODO: Can we get a mime-type here?
+            #~ "tags": [x.decode("UTF-8") for x in options.tags],
+            "tags": u", ".join(x.decode("UTF-8") for x in tags), #0.2 needs a string
+            "icon": u"",
+            "bookmark": False,
+            "app": u"/usr/share/applications/firefox.desktop",
+            "origin": u"",
+        }
+    else:
+        logging.debug("using zeitgeist version %r" %(version,))
+        from zeitgeist.datamodel import Subject, Event, Content, Source
+        event = Event()
+        event.timestamp = int(time.time())
+        event.interpretation = Source.USER_ACTIVITY.uri
+        event.manifestation = Content.CREATE_EVENT.uri
+        event.actor = "application://firefox.desktop"
+        subject = Subject()
+        subject.uri = location.decode("UTF-8")
+        subject.manifestation = Content.VISIT_EVENT.uri
+        subject.interpretation = Source.WEB_HISTORY.uri
+        subject.mimetype = u"text/html"
+        subject.text = title.decode("UTF-8")
+        event.append_subject(subject)
+        
+        # for now
+        item = event
+    return iface.InsertEvents([item, ])
+    
+def bulk(filename, tags=None):
+    # lazy import to catch the error
+    from zeitgeist.dbusutils import DBusInterface
+    
+    tags = tags or list()
+    arguments = list()
+    content = open(filename).read().decode("UTF-8")
+    data = json.loads(content.replace("\\", "\\\\"))
+    
+    iface = DBusInterface()
+    try:
+        version = iface.version()
+    except:
+        version = (0, 0, 0)
+        
+    for entry in data["bulk"]:
+        if version < (0, 3, 0):
+            arguments.append(
+                {
+                    "timestamp": int(entry[0] // 1000000),
+                    "uri": entry[1],
+                    "text": entry[2],
+                    "source": u"Web History",
+                    "content": u"Web",
+                    "use": u"http://gnome.org/zeitgeist/schema/Event#link",
+                    "mimetype": u"text/html", # TODO: Can we get a mime-type here?
+                    #~ "tags": [x.decode("UTF-8") for x in options.tags],
+                    "tags": u", ".join(x.decode("UTF-8") for x in tags), #0.2 needs a string
+                    "icon": u"",
+                    "bookmark": False,
+                    "app": u"/usr/share/applications/firefox.desktop",
+                    "origin": u"",
+                }
+            )
+        else:
+            from zeitgeist.datamodel import Subject, Event, Content, Source
+            event = Event()
+            event.timestamp = int(entry[0] // 1000000)
+            event.interpretation = Source.USER_ACTIVITY.uri
+            event.manifestation = Content.CREATE_EVENT.uri
+            event.actor = "application://firefox.desktop"
+            subject = Subject()
+            subject.uri = entry[1]
+            subject.manifestation = Content.VISIT_EVENT.uri
+            subject.interpretation = Source.WEB_HISTORY.uri
+            subject.mimetype = u"text/html"
+            subject.text = entry[2]
+            event.append_subject(subject)
+            arguments.append(event)
+    return iface.InsertEvents(arguments)
+    
+def getLastTimestamp(filename):
+    # lazy import to catch the error
+    from zeitgeist.dbusutils import DBusInterface
+    
+    iface = DBusInterface()
+    
+    try:
+        version = iface.version()
+    except:
+        version = (0, 0, 0)
+    
+    if version < (0, 3, 0):
+        timestamp = int(iface.GetLastInsertionDate(u"/usr/share/applications/firefox.desktop") or 0)
+    else:
+        timestamp = int(iface.GetHighestTimestampForActor("application://firefox.desktop"))
+    f = open(filename, "w")
+    f.write(str(timestamp))
+    f.close()
+    return 0
+    
+def parse_cmdline_args():
+    parser = OptionParser()
+    parser.add_option(
+        "--location", dest="location", help="uri related to the event", metavar="URI", default=None,
+    )
+    parser.add_option(
+        "--title", dest="title", help="title to the event", metavar="TITLE", default=None,
+    )
+    parser.add_option(
+        "--bulk", dest="bulk", help="read events from --iofile and bulk-insert them", action="store_true"
+    )
+    parser.add_option(
+        "--iofile", dest="iofile", help="file to communicate with the FF extension", metavar="FILENAME"
+    )
+    parser.add_option(
+        "--last", dest="last",
+        help="write the timestamp of the last inserted event to --iofile", action="store_true"
+    )
+    parser.add_option(
+        "--tags", dest="tags", action="callback", callback=vararg_callback,
+        help="tag to the event", metavar="TAG1 TAG2 ...", default=[],
+    )
+    return parser.parse_args()
+    
+
+def main():
+    options, args = parse_cmdline_args()
+    assert not args, args
+    
+    if options.bulk:
+        #run bulk-upload
+        assert options.iofile, " --iofile not given"
+        return bulk(options.iofile, options.tags)
+    elif options.last:
+        assert options.iofile, " --iofile not given"
+        return getLastTimestamp(options.iofile)
+    elif options.location is not None and options.title is not None:
+        return single_insert(options.location, options.title, options.tags)
+    else:
+        raise ValueError("wrong arguments")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except RuntimeError, e:
+        logging.error("Failed to send event to the zeitgeist engine: %s" %e)
+        sys.exit(100)
+    except:
+        options, args = parse_cmdline_args()
+        if options.iofile:
+            import traceback
+            traceback.print_exc(file=open(options.iofile, "w"))
+        raise
+    sys.exit(0)
+    

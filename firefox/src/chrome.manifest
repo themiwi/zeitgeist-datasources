@@ -1,0 +1,3 @@
+content	zeitgeist	chrome/content/
+locale	zeitgeist	en-US	chrome/locale/en-US/
+overlay	chrome://browser/content/browser.xul	chrome://zeitgeist/content/ff-overlay.xul
