@@ -19,6 +19,7 @@
 
 import totem
 import sys
+import fnmatch
 import time
 import gio
 import mimetypes
@@ -46,15 +47,40 @@ class SimpleMatch(object):
 	def __repr__(self):
 		return "%s(%r)" %(self.__class__.__name__, self.__pattern)
 
-AUDIO_MIMETYPES = [
-		SimpleMatch(u"audio/*"),
-		u"application/ogg"
-		]
+class MimeTypeSet(set):
+	""" Set which allows to match against a string or an object with a
+	match() method.
+	"""
 
-VIDEO_MIMETYPES = [
-		SimpleMatch(u"video/*"),
-		u"application/ogg"
-		]
+	def __init__(self, *items):
+		super(MimeTypeSet, self).__init__()
+		self.__pattern = set()
+		for item in items:
+			if isinstance(item, (str, unicode)):
+				self.add(item)
+			elif hasattr(item, "match"):
+				self.__pattern.add(item)
+			else:
+				raise ValueError("Bad mimetype '%s'" %item)
+
+	def __contains__(self, mimetype):
+		result = super(MimeTypeSet, self).__contains__(mimetype)
+		if not result:
+			for pattern in self.__pattern:
+				if pattern.match(mimetype):
+					return True
+		return result
+		
+	def __len__(self):
+		return super(MimeTypeSet, self).__len__() + len(self.__pattern)
+
+	def __repr__(self):
+		items = ", ".join(sorted(map(repr, self | self.__pattern)))
+		return "%s(%s)" %(self.__class__.__name__, items)
+		
+
+AUDIO_MIMETYPES = MimeTypeSet(*[SimpleMatch(u"audio/*"),u"application/"])
+VIDEO_MIMETYPES = MimeTypeSet(*[SimpleMatch(u"video/*"),u"application/ogg"])
 
 class Zeitgeist(totem.Plugin):
 	def __init__ (self):
@@ -76,6 +102,7 @@ class Zeitgeist(totem.Plugin):
 		self.totem_object.connect("metadata-updated", self.do_update_metadata)
 
 	def deactivate (self, totem):
+		self.inform_closed()
 		print "deactivate"
 
 	def do_update_metadata(self, totem, artist, title, album, num):
@@ -112,26 +139,23 @@ class Zeitgeist(totem.Plugin):
 		self.inform_closed()
 
 	def inform_opened(self):
-		print "OPENED"
-		print self.current_metadata
-		#self.SendToZeitgeist(self.current_metadata, Interpretation.OPEN_EVENT)
-		print "--------------------"
+		print "OPENED", self.current_metadata
+		self.SendToZeitgeist(self.current_metadata, Interpretation.OPEN_EVENT)
 
 	def inform_closed(self):
-		print "CLOSED"
-		print self.last_metadata
-		#self.SendToZeitgeist(self.last_metadata, Interpretation.CLOSE_EVENT)
-		print "--------------------"
+		print "CLOSED", self.last_metadata
+		if self.last_metadata:
+			self.SendToZeitgeist(self.last_metadata, Interpretation.CLOSE_EVENT)
 
 	def SendToZeitgeist(self, doc, event):
-		if doc.get_uri():
+		if doc["uri"]:
 			subject = Subject.new_for_values(
 				uri=doc["uri"],
 				text=doc["title"],
 				interpretation=unicode(self.current_metadata["interpretation"]),
 				manifestation=unicode(Manifestation.FILE),
 				origin=doc["uri"].rpartition("/")[0],
-				mimetype=doc.get_mime_type(), #TBD	
+				mimetype=doc["mimetype"], #TBD	
 			)
 			event = Event.new_for_values(
 				timestamp=int(time.time()*1000),
