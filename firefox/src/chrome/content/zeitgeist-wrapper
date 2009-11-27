@@ -78,11 +78,11 @@ def single_insert(location, title, tags=None):
         actor="application://firefox.desktop",
         subjects=[subject,]
     )
-    CLIENT.insert_event(event)
+    client.insert_event(event)
     
 def bulk(filename, tags=None):
-    # lazy import to catch the error
-    from zeitgeist.client import ZeitgeistClient
+    # lazy import to catch the error    
+    from zeitgeist.client import ZeitgeistDBusInterface
     from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
     
     tags = tags or list()
@@ -90,14 +90,14 @@ def bulk(filename, tags=None):
     content = open(filename).read().decode("UTF-8")
     data = json.loads(content.replace("\\", "\\\\"))
     
-    client = ZeitgeistClient()
-        
+    iface = ZeitgeistDBusInterface()
+    
     for entry in data["bulk"]:
         subject = Subject.new_for_values(
             uri=entry[1],
             interpretation=unicode(Interpretation.UNKNOWN), #TBD?
             manifestation=unicode(Manifestation.WEB_HISTORY),
-            origin=unicode(get_origin(location)),
+            origin=unicode(get_origin(entry[1])),
             mimetype=u"text/html", #TBD
             text=entry[2],
         )            
@@ -112,11 +112,12 @@ def bulk(filename, tags=None):
     
 def getLastTimestamp(filename):
     # lazy import to catch the error
-    from zeitgeist.dbusutils import DBusInterface
+    from zeitgeist.client import ZeitgeistDBusInterface
     
-    iface = DBusInterface()
+    iface = ZeitgeistDBusInterface()
     
     timestamp = int(iface.GetHighestTimestampForActor("application://firefox.desktop"))
+    print "LAST TIMESTAMP", timestamp
     f = open(filename, "w")
     f.write(str(timestamp))
     f.close()
