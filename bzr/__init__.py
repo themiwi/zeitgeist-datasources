@@ -35,36 +35,42 @@ from bzrlib import branch
 logging.basicConfig(filename="/dev/null")
 
 install_hook = True
+CLIENT = None
+
 try:
-    from zeitgeist import dbusutils
-    IFACE = dbusutils.get_engine_interface()
-except: # FIXME: adjust this to ImportError, whatever exception is raised
-        # as the fix for LP: #397432
+    from zeitgeist.client import ZeitgeistClient
+    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
+except ImportError:
     install_hook = False
+else:
+    try:
+        CLIENT = ZeitgeistClient()
+    except RuntimeError, e:
+        print "Unable to connect to Zeitgeist, won't send events. Reason: '%s'" %e
+        install_hook = False
 
 
 def post_commit(local, master, old_revno, old_revid, new_revno, new_revid):
     revision = master.repository.get_revision(new_revid)
     if new_revno == 1:
-        use = u"CreateEvent"
+        interpretation = Interpretation.CREATE_EVENT
     else:
-        use = u"ModifyEvent"
-    item = {
-        "timestamp": int(time.time()),
-        "uri": unicode(master.base),
-        "text": unicode(revision.message),
-        "source": "Bzr Branch",
-        "content": u"Branch",
-        "use": u"http://gnome.org/zeitgeist/schema/1.0/core#%s" %use,
-        "mimetype": u"application/x-bzr-branch",
-        "tags": u"",
-        "icon": u"",
-        "app": u"/usr/share/applications/olive-gtk.desktop",
-        "origin": u"", 	# we are not sure about the origin of this item,
-                        # let's make it NULL, it has to be a string
-    }
-    items = [dbusutils.plainify_dict(item),]
-    IFACE.InsertEvents(items)
+        interpretation = Interpretation.MODIFY_EVENT
+    subject = Subject.new_for_values(
+        uri=unicode(master.base),
+        interpretation=unicode(Interpretation.SOURCECODE),
+        manifestation=unicode(Manifestation.FILE),
+        text=unicode(revision.message),
+        origin=unicode(master.base),
+    )            
+    event = Event.new_for_values(
+        timestamp=int(time.time()*1000),
+        interpretation=unicode(interpretation),
+        manifestation=unicode(Manifestation.USER_ACTIVITY),
+        actor="application://bzr.desktop", #something usefull here, always olive-gtk?
+        subjects=[subject,]
+    )
+    CLIENT.insert_event(event)
 
 if install_hook:
     branch.Branch.hooks.install_named_hook("post_commit", post_commit,
