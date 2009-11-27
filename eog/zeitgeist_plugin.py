@@ -34,7 +34,7 @@ class ZeitgeistPlugin(eog.Plugin):
 
     def __init__(self):
         eog.Plugin.__init__(self)
-        self.__current_image = None
+        self.__current_image = dict()
         self.__run = True
 
     def activate(self, window):
@@ -44,8 +44,8 @@ class ZeitgeistPlugin(eog.Plugin):
     
     def get_image(self, window):
         image = window.get_image()
-        if image and image is not self.__current_image:
-            self.__current_image = image
+        if image and image is not self.__current_image.get(window, None):
+            self.__current_image[window] = image
             file_obj = image.get_file()
             subject = Subject.new_for_values(
                 uri=file_obj.get_uri(),
@@ -64,6 +64,10 @@ class ZeitgeistPlugin(eog.Plugin):
             CLIENT.insert_event(event)
         return self.__run
         
-    def deactivate(self, *args):
-        print "unloading zeitgeist plugin ..."
+    def deactivate(self, window, *args):
+        print "unloading zeitgeist plugin for %r..." %window
         self.__run = False
+        try:
+            del self.__current_image[window]
+        except KeyError:
+            pass
