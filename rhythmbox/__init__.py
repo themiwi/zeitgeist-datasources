@@ -21,14 +21,14 @@ import rb
 import rhythmdb
 import time
 
-from zeitgeist.client import ZeitgeistClient
+from zeitgeist.client import ZeitgeistDBusInterface
 from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
 
 try:
-    CLIENT = ZeitgeistClient()
+    IFACE = ZeitgeistDBusInterface()
 except RuntimeError, e:
     print "Unable to connect to Zeitgeist, won't send events. Reason: '%s'" %e
-    CLIENT = None
+    IFACE = None
     
 class ZeitgeistPlugin(rb.Plugin):
     
@@ -37,7 +37,7 @@ class ZeitgeistPlugin(rb.Plugin):
         
     def activate(self, shell):
         print "LOADING Zeitgeist plugin ......"
-        if CLIENT is not None:
+        if IFACE is not None:
             shell_player = shell.get_player()
             shell_player.connect("playing-changed", self.playing_changed)
             shell_player.connect("playing-source-changed", self.playing_source_changed)
@@ -86,7 +86,7 @@ class ZeitgeistPlugin(rb.Plugin):
                 subjects=[subject,]
             )
             print event
-            CLIENT.insert_event(event)
+            IFACE.InsertEvents([event,])
         
     def deactivate(self, shell):
         print "UNLOADING Zeitgeist plugin ......."
