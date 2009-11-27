@@ -21,6 +21,7 @@ import sys
 import time
 import logging
 import json
+import urlparse
 
 from optparse import OptionParser
 
@@ -47,106 +48,66 @@ def vararg_callback(option, opt_str, value, parser):
     del parser.rargs[:len(value)]
     setattr(parser.values, option.dest, value)
     
+def get_origin(uri):
+    scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
+    origin = urlparse.urlunsplit((scheme, netloc, "", "", ""))
+    return origin
     
 def single_insert(location, title, tags=None):
     # lazy import to catch the error
-    from zeitgeist.dbusutils import DBusInterface
+    from zeitgeist.client import ZeitgeistClient
+    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
         
     tags = tags or list()
     logging.debug("Zeitgeist extension for firefox is sending a visit event '%s'" %location)
     
-    iface = DBusInterface()
-    try:
-        version = iface.version()
-    except:
-        version = (0, 0, 0)
+    client = ZeitgeistClient()
     
-    if version < (0, 3, 0):
-        logging.debug("using zeitgeist version %r < 0.3" %version)
-        item = {
-            "timestamp": int(time.time()),
-            "uri": location.decode("UTF-8"),
-            "text": title.decode("UTF-8"),
-            "source": u"Web History",
-            "content": u"Web",
-            "use": u"http://gnome.org/zeitgeist/schema/Event#link",
-            "mimetype": u"text/html", # TODO: Can we get a mime-type here?
-            #~ "tags": [x.decode("UTF-8") for x in options.tags],
-            "tags": u", ".join(x.decode("UTF-8") for x in tags), #0.2 needs a string
-            "icon": u"",
-            "bookmark": False,
-            "app": u"/usr/share/applications/firefox.desktop",
-            "origin": u"",
-        }
-    else:
-        logging.debug("using zeitgeist version %r" %(version,))
-        from zeitgeist.datamodel import Subject, Event, Content, Source
-        event = Event()
-        event.timestamp = int(time.time())
-        event.interpretation = Source.USER_ACTIVITY.uri
-        event.manifestation = Content.CREATE_EVENT.uri
-        event.actor = "application://firefox.desktop"
-        subject = Subject()
-        subject.uri = location.decode("UTF-8")
-        subject.manifestation = Content.VISIT_EVENT.uri
-        subject.interpretation = Source.WEB_HISTORY.uri
-        subject.mimetype = u"text/html"
-        subject.text = title.decode("UTF-8")
-        event.append_subject(subject)
-        
-        # for now
-        item = event
-    return iface.InsertEvents([item, ])
+    subject = Subject.new_for_values(
+        uri=location.decode("UTF-8"),
+        interpretation=unicode(Interpretation.UNKNOWN), #TBD?
+        manifestation=unicode(Manifestation.WEB_HISTORY),
+        origin=unicode(get_origin(location)),
+        mimetype=u"text/html", #TBD
+        text=title.decode("UTF-8"),
+    )            
+    event = Event.new_for_values(
+        timestamp=int(time.time()*1000),
+        interpretation=unicode(Interpretation.VISIT_EVENT),
+        manifestation=unicode(Manifestation.USER_ACTIVITY),
+        actor="application://firefox.desktop",
+        subjects=[subject,]
+    )
+    CLIENT.insert_event(event)
     
 def bulk(filename, tags=None):
     # lazy import to catch the error
-    from zeitgeist.dbusutils import DBusInterface
+    from zeitgeist.client import ZeitgeistClient
+    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
     
     tags = tags or list()
     arguments = list()
     content = open(filename).read().decode("UTF-8")
     data = json.loads(content.replace("\\", "\\\\"))
     
-    iface = DBusInterface()
-    try:
-        version = iface.version()
-    except:
-        version = (0, 0, 0)
+    client = ZeitgeistClient()
         
     for entry in data["bulk"]:
-        if version < (0, 3, 0):
-            arguments.append(
-                {
-                    "timestamp": int(entry[0] // 1000000),
-                    "uri": entry[1],
-                    "text": entry[2],
-                    "source": u"Web History",
-                    "content": u"Web",
-                    "use": u"http://gnome.org/zeitgeist/schema/Event#link",
-                    "mimetype": u"text/html", # TODO: Can we get a mime-type here?
-                    #~ "tags": [x.decode("UTF-8") for x in options.tags],
-                    "tags": u", ".join(x.decode("UTF-8") for x in tags), #0.2 needs a string
-                    "icon": u"",
-                    "bookmark": False,
-                    "app": u"/usr/share/applications/firefox.desktop",
-                    "origin": u"",
-                }
-            )
-        else:
-            from zeitgeist.datamodel import Subject, Event, Content, Source
-            event = Event()
-            event.timestamp = int(entry[0] // 1000000)
-            event.interpretation = Source.USER_ACTIVITY.uri
-            event.manifestation = Content.CREATE_EVENT.uri
-            event.actor = "application://firefox.desktop"
-            subject = Subject()
-            subject.uri = entry[1]
-            subject.manifestation = Content.VISIT_EVENT.uri
-            subject.interpretation = Source.WEB_HISTORY.uri
-            subject.mimetype = u"text/html"
-            subject.text = entry[2]
-            event.append_subject(subject)
-            arguments.append(event)
+        subject = Subject.new_for_values(
+            uri=entry[1],
+            interpretation=unicode(Interpretation.UNKNOWN), #TBD?
+            manifestation=unicode(Manifestation.WEB_HISTORY),
+            origin=unicode(get_origin(location)),
+            mimetype=u"text/html", #TBD
+            text=entry[2],
+        )            
+        event = Event.new_for_values(
+            timestamp=int(entry[0] // 1000),
+            interpretation=unicode(Interpretation.VISIT_EVENT),
+            manifestation=unicode(Manifestation.USER_ACTIVITY),
+            actor="application://firefox.desktop",
+            subjects=[subject,]
+        )
     return iface.InsertEvents(arguments)
     
 def getLastTimestamp(filename):
@@ -155,15 +116,7 @@ def getLastTimestamp(filename):
     
     iface = DBusInterface()
     
-    try:
-        version = iface.version()
-    except:
-        version = (0, 0, 0)
-    
-    if version < (0, 3, 0):
-        timestamp = int(iface.GetLastInsertionDate(u"/usr/share/applications/firefox.desktop") or 0)
-    else:
-        timestamp = int(iface.GetHighestTimestampForActor("application://firefox.desktop"))
+    timestamp = int(iface.GetHighestTimestampForActor("application://firefox.desktop"))
     f = open(filename, "w")
     f.write(str(timestamp))
     f.close()
