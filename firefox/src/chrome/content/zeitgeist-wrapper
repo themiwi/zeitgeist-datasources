@@ -113,10 +113,17 @@ def bulk(filename, tags=None):
 def getLastTimestamp(filename):
     # lazy import to catch the error
     from zeitgeist.client import ZeitgeistDBusInterface
+    from zeitgeist.datamodel import Event, TimeRange, StorageState, ResultType
     
     iface = ZeitgeistDBusInterface()
-    
-    timestamp = int(iface.GetHighestTimestampForActor("application://firefox.desktop"))
+    ev_template = Event.new_for_values(actor="application://firefox.desktop")
+    events = iface.FindEventIds(
+        TimeRange.until_now(), [ev_template,], StorageState.Any, 1, ResultType.MostRecentEvents)
+    if events:
+        event = Event(iface.GetEvents(events)[0])
+        timestamp = int(event.timestamp)
+    else:
+        timestamp = 0
     print "LAST TIMESTAMP", timestamp
     f = open(filename, "w")
     f.write(str(timestamp))
