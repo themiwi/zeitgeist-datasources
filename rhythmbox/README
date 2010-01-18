@@ -1,10 +1,14 @@
-Zeitgeist plugin for rhythmbox
-==============================
+Zeitgeist plugin for Rhythmbox
+******************************
 
-To use this plugin run
-  $ mkdir -p ~/.gnome2/rhythmbox/plugins
-  $ cd mkdir -p ~/.gnome2/rhythmbox/plugins
-  $ ln -s <path to zeitgeist dataprovider branch>/rhythmbox zeitgeist_plugin
-  
-To get some debugging output of this plugin start rhythmbox with
+To use this plugin:
+
+* Install Zeitgeist 0.3 (or greater) so that the python library is available system-wide.
+* Run the install.sh script which will copy the plugin to '~/.local/share/rhythmbox/plugins'.
+* Launch Rhythmbox, choose Edit -> Plugins, and select the Zeitgeist plugin.
+
+To update plugin changes:
+* Run the install.sh script to recopy the plugin files.
+
+To get the debug output of this plugin, start rhythmbox with:
   $ rhythmbox -D Zeitgeist
