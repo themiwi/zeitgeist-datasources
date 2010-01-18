@@ -1,6 +1,11 @@
 Zeitgeist plugin to the EOG Image Viewer
 ****************************************
 
-To use this plugin install Zeitgeist (>= 0.3) and copy
-'zeitgeist.eog-plugin' and 'zeitgeist_plugin.py' to
-'~/.gnome2/eog/plugins'
+To use this plugin:
+
+* Install Zeitgeist 0.3 (or greater) so that the python library is available system-wide.
+* Run the install.sh script which will copy the plugin to '~/.gnome2/eog/plugins'.
+* Launch EOG, choose Edit -> Preferences, and select the Zeitgeist plugin on the Plugin tab.
+
+To update plugin changes:
+* Run the install.sh script to recopy the plugin files.
