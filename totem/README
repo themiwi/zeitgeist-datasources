@@ -1,0 +1,12 @@
+Zeitgeist plugin for Totem
+**************************
+
+To use this plugin:
+
+* Install Zeitgeist 0.3 (or greater) so that the python library is available system-wide.
+* Run the install.sh script which will copy the plugin to '~/.local/share/totem/plugins'.
+* Launch Totem, choose Edit -> Plugins, and select the Zeitgeist plugin.
+
+To update plugin changes:
+* Run the install.sh script to recopy the plugin files.
+

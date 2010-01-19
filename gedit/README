@@ -1,1 +1,12 @@
-Move the files to ~/.gnome2/gedit/plugins/ and enjoy
+Zeitgeist plugin to gedit
+*************************
+
+To use this plugin:
+
+* Install Zeitgeist 0.3 (or greater) so that the python library is available system-wide.
+* Run the install.sh script which will copy the plugin to '~/.gnome2/gedit/plugins'.
+* Launch gedit, choose Edit -> Preferences, and select the Zeitgeist plugin on the Plugin tab.
+
+To update plugin changes:
+* Run the install.sh script to recopy the plugin files.
+
