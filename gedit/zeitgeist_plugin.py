@@ -35,15 +35,14 @@ class ZeitgeistLogic:
 		self._window = window
 		self._plugin = plugin
 		self.docs = self._window.get_documents()
-		self._handler = self._window.connect("tab-removed", self.TabRemovedHandler)
-		self._handler = self._window.connect("active-tab-changed", self.TabChangedHandler)
-		self._tabs = 0
+		self._window.connect("tab-removed", self.TabRemovedHandler)
+		self._window.connect("active-tab-changed", self.TabChangedHandler)
 
 	def deactivate(self):
-		self._window.disconnect(self._handler)
+		self._window.disconnect_by_func(self.TabRemovedHandler)
+		self._window.disconnect_by_func(self.TabChangedHandler)
 		self._window = None
 		self._plugin = None
-		self._handler = None
 
 	def TabRemovedHandler(self, window, tab):
 		doc = tab.get_document()
