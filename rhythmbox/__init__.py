@@ -19,6 +19,7 @@
 
 import rb
 import rhythmdb
+import gobject
 import time
 
 from zeitgeist.client import ZeitgeistDBusInterface
@@ -42,6 +43,11 @@ class ZeitgeistPlugin(rb.Plugin):
             shell_player.connect("playing-changed", self.playing_changed)
             shell_player.connect("playing-source-changed", self.playing_source_changed)
             shell_player.connect("playing-song-changed", self.playing_song_changed)
+
+            backend_player = shell_player.get_property("player")
+            backend_player.connect("eos", self.on_backend_eos)
+    
+            self.__manual_switch = True
             self.__current_song = None
             self._shell = shell
         
@@ -57,6 +63,12 @@ class ZeitgeistPlugin(rb.Plugin):
         return song
         
         
+    def on_backend_eos(self, backend_player, stream_data, eos_early):
+        print "got eos signal"
+        # EOS signal means that the song changed because the song is over.
+        # ie. the user did not explicitly change the song.
+        self.__manual_switch = False
+        
     def playing_changed(self, shell, state):
         """ using this signal to trigger play/pause switches"""
         pass
@@ -68,16 +80,42 @@ class ZeitgeistPlugin(rb.Plugin):
     def playing_song_changed(self, shell, entry):
         print ("got playing_song_changed signal", shell, entry)
         if self.__current_song is not None:
-	    	self.send_to_zeitgeist(self.__current_song, Interpretation.CLOSE_EVENT)
+            self.send_to_zeitgeist_async(self.__current_song, Interpretation.CLOSE_EVENT)
 
         if entry is not None:
-	        self.send_to_zeitgeist(entry, Interpretation.OPEN_EVENT)
+	        self.send_to_zeitgeist_async(entry, Interpretation.OPEN_EVENT)
 
         self.__current_song = entry
+        gobject.idle_add(self.reset_manual_switch)
+        
+    def reset_manual_switch(self):
+        print "manual_switch reset to True"
+        """
+        After the eos signal has fired, and after the zeitgeist events have
+        been sent asynchronously, reset the manual_switch variable.
+        """
+        self.__manual_switch = True
+        
+    def send_to_zeitgeist_async(self, entry, event_type):
+        """ 
+        We do async here because the "eos" signal is fired
+        *after* the "playing-song-changed" signal.
+        We don't know if the song change was manual or automatic
+        until we get get the eos signal. If the mainloop goes to
+        idle, it means there are no more signals scheduled, so we
+        will have already received the eos if it was coming.   
+        """
+        gobject.idle_add(self.send_to_zeitgeist, entry, event_type)
         
     def send_to_zeitgeist(self, entry, event_type):
         db = self._shell.get_property("db")
         song = self.get_song_info(db, entry)
+        
+        if self.__manual_switch:
+            manifest = Manifestation.USER_ACTIVITY
+        else:
+            manifest = Manifestation.SCHEDULED_ACTIVITY
+        
         subject = Subject.new_for_values(
             uri=song["location"],
             interpretation=unicode(Interpretation.MUSIC),
@@ -89,7 +127,7 @@ class ZeitgeistPlugin(rb.Plugin):
         event = Event.new_for_values(
             timestamp=int(time.time()*1000),
             interpretation=unicode(event_type),
-            manifestation=unicode(Manifestation.USER_ACTIVITY),
+            manifestation=unicode(manifest),
             actor="application://rhythmbox.desktop",
             subjects=[subject,]
         )
