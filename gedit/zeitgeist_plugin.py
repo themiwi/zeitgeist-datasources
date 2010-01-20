@@ -34,38 +34,37 @@ class ZeitgeistLogic:
 	def __init__(self, plugin, window):
 		self._window = window
 		self._plugin = plugin
-		self.docs = self._window.get_documents()
+		self._window.connect("tab-added", self.TabAddedHandler)
 		self._window.connect("tab-removed", self.TabRemovedHandler)
 		self._window.connect("active-tab-changed", self.TabChangedHandler)
 
 	def deactivate(self):
+		self._window.disconnect_by_func(self.TabAddedHandler)
 		self._window.disconnect_by_func(self.TabRemovedHandler)
 		self._window.disconnect_by_func(self.TabChangedHandler)
 		self._window = None
 		self._plugin = None
 
+	def TabAddedHandler(self, window, tab):
+		doc = tab.get_document()
+		print "loaded new document ", doc.get_uri()
+		self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
+		doc.connect("saved", self.SaveDocHandler)	
+
 	def TabRemovedHandler(self, window, tab):
 		doc = tab.get_document()
 		print "tab removed", doc.get_uri()
+		doc.disconnect_by_func(self.SaveDocHandler)
 		self.SendToZeitgeist(doc, Interpretation.CLOSE_EVENT)
-		self.docs = self._window.get_documents()
 
 	def TabChangedHandler(self, window, tab):
 		doc = tab.get_document()
-		if self.docs.count(doc) == 0:
-			print "loaded new document ", doc.get_uri()
-			self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
-			doc.connect("saved", self.SaveDocHandler)	
-		else:		
-			print "tab changed", doc.get_uri()
-		self.docs = self._window.get_documents()
-		print "***", self.docs
+		print "tab changed", doc.get_uri()
+		self.SendToZeitgeist(doc, Interpretation.FOCUS_EVENT)
 
 	def SaveDocHandler(self, doc, data):
 		print "saved document", doc.get_uri()
-		self.docs = self._window.get_documents()
 		self.SendToZeitgeist(doc, Interpretation.SAVE_EVENT)
-		print "***", self.docs
 
 	def SendToZeitgeist(self, doc, event):
 		if doc.get_uri():
