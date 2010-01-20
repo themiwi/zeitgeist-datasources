@@ -43,6 +43,7 @@ class ZeitgeistPlugin(rb.Plugin):
             shell_player.connect("playing-source-changed", self.playing_source_changed)
             shell_player.connect("playing-song-changed", self.playing_song_changed)
             self.__current_song = None
+            self._shell = shell
         
     @staticmethod
     def get_song_info(db, entry):
@@ -58,35 +59,43 @@ class ZeitgeistPlugin(rb.Plugin):
         
     def playing_changed(self, shell, state):
         """ using this signal to trigger play/pause switches"""
-        print ("got playing_changed signal", shell, state)
+        pass
         
     def playing_source_changed(self, shell, source):
         """ use this signal to trigger changes between local music, radio, online music etc."""
-        print ("got playing_source_changed signal", shell, source)
+        pass
         
     def playing_song_changed(self, shell, entry):
         print ("got playing_song_changed signal", shell, entry)
-        db = shell.get_property("db")
+        if self.__current_song is not None:
+	    	self.send_to_zeitgeist(self.__current_song, Interpretation.CLOSE_EVENT)
+
         if entry is not None:
-            self.__current_song = entry
-            song = self.get_song_info(db, entry)
-            subject = Subject.new_for_values(
-                uri=song["location"],
-                interpretation=unicode(Interpretation.MUSIC),
-                manifestation=unicode(Manifestation.FILE),
-                #~ origin="", #TBD
-                mimetype=song["mimetype"],
-                text=" - ".join([song["title"], song["artist"], song["album"]])
-            )            
-            event = Event.new_for_values(
-                timestamp=int(time.time()*1000),
-                interpretation=unicode(Interpretation.VISIT_EVENT),
-                manifestation=unicode(Manifestation.USER_ACTIVITY),
-                actor="application://rhythmbox.desktop",
-                subjects=[subject,]
-            )
-            print event
-            IFACE.InsertEvents([event,])
+	        self.send_to_zeitgeist(entry, Interpretation.OPEN_EVENT)
+
+        self.__current_song = entry
+        
+    def send_to_zeitgeist(self, entry, event_type):
+        db = self._shell.get_property("db")
+        song = self.get_song_info(db, entry)
+        subject = Subject.new_for_values(
+            uri=song["location"],
+            interpretation=unicode(Interpretation.MUSIC),
+            manifestation=unicode(Manifestation.FILE),
+            #~ origin="", #TBD
+            mimetype=song["mimetype"],
+            text=" - ".join([song["title"], song["artist"], song["album"]])
+        )            
+        event = Event.new_for_values(
+            timestamp=int(time.time()*1000),
+            interpretation=unicode(event_type),
+            manifestation=unicode(Manifestation.USER_ACTIVITY),
+            actor="application://rhythmbox.desktop",
+            subjects=[subject,]
+        )
+        print event
+        IFACE.InsertEvents([event,])
         
     def deactivate(self, shell):
         print "UNLOADING Zeitgeist plugin ......."
+
