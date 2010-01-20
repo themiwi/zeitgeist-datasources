@@ -47,23 +47,23 @@ class ZeitgeistLogic:
 
 	def TabAddedHandler(self, window, tab):
 		doc = tab.get_document()
-		print "loaded new document ", doc.get_uri()
+		print "Zeitgeist: loaded new document ", doc.get_uri()
 		self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
 		doc.connect("saved", self.SaveDocHandler)	
 
 	def TabRemovedHandler(self, window, tab):
 		doc = tab.get_document()
-		print "tab removed", doc.get_uri()
+		print "Zeitgeist: tab removed", doc.get_uri()
 		doc.disconnect_by_func(self.SaveDocHandler)
 		self.SendToZeitgeist(doc, Interpretation.CLOSE_EVENT)
 
 	def TabChangedHandler(self, window, tab):
 		doc = tab.get_document()
-		print "tab changed", doc.get_uri()
+		print "Zeitgeist: tab changed", doc.get_uri()
 		self.SendToZeitgeist(doc, Interpretation.FOCUS_EVENT)
 
 	def SaveDocHandler(self, doc, data):
-		print "saved document", doc.get_uri()
+		print "Zeitgeist: saved document", doc.get_uri()
 		self.SendToZeitgeist(doc, Interpretation.SAVE_EVENT)
 
 	def SendToZeitgeist(self, doc, event):
@@ -91,7 +91,6 @@ class ZeitgeistPlugin(gedit.Plugin):
 		self._instances = {}
 
 	def activate(self, window):
-		print window
 		self._instances[window] = ZeitgeistLogic(self, window)
 
 	def deactivate(self, window):
