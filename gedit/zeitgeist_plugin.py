@@ -47,9 +47,20 @@ class ZeitgeistLogic:
 
 	def TabAddedHandler(self, window, tab):
 		doc = tab.get_document()
-		print "Zeitgeist: loaded new document ", doc.get_uri()
-		self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
+		print "Zeitgeist: loaded new tab ", doc.get_uri()
+		
+		"""
+		We don't send an OPEN_EVENT here because that will
+		be done after the document's 'loaded' signal is emitted.
+		
+		We do this because when if there are any empty tabs when
+		the user opens a file, the new file will replace the empty 
+		tab, and the document's 'loaded' signal will fire, but no
+		tab is added and therefore no 'tab-added' is fired.
+		"""
+		
 		doc.connect("saved", self.SaveDocHandler)	
+		doc.connect("loaded", self.TabLoadedHandler)
 
 	def TabRemovedHandler(self, window, tab):
 		doc = tab.get_document()
@@ -59,8 +70,12 @@ class ZeitgeistLogic:
 
 	def TabChangedHandler(self, window, tab):
 		doc = tab.get_document()
-		print "Zeitgeist: tab changed", doc.get_uri()
+		print "Zeitgeist: active tab changed", doc.get_uri()
 		self.SendToZeitgeist(doc, Interpretation.FOCUS_EVENT)
+
+	def TabLoadedHandler(self, doc, data):
+		print "Zeitgeist: tab loaded document", doc.get_uri()
+		self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
 
 	def SaveDocHandler(self, doc, data):
 		print "Zeitgeist: saved document", doc.get_uri()
