@@ -66,6 +66,7 @@ class ZeitgeistLogic:
 		doc = tab.get_document()
 		print "Zeitgeist: tab removed", doc.get_uri()
 		doc.disconnect_by_func(self.SaveDocHandler)
+		doc.disconnect_by_func(self.TabLoadedHandler)
 		self.SendToZeitgeist(doc, Interpretation.CLOSE_EVENT)
 
 	def TabChangedHandler(self, window, tab):
