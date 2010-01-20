@@ -36,12 +36,10 @@ class ZeitgeistLogic:
 		self._plugin = plugin
 		self._window.connect("tab-added", self.TabAddedHandler)
 		self._window.connect("tab-removed", self.TabRemovedHandler)
-		self._window.connect("active-tab-changed", self.TabChangedHandler)
 
 	def deactivate(self):
 		self._window.disconnect_by_func(self.TabAddedHandler)
 		self._window.disconnect_by_func(self.TabRemovedHandler)
-		self._window.disconnect_by_func(self.TabChangedHandler)
 		self._window = None
 		self._plugin = None
 
@@ -68,11 +66,6 @@ class ZeitgeistLogic:
 		doc.disconnect_by_func(self.SaveDocHandler)
 		doc.disconnect_by_func(self.TabLoadedHandler)
 		self.SendToZeitgeist(doc, Interpretation.CLOSE_EVENT)
-
-	def TabChangedHandler(self, window, tab):
-		doc = tab.get_document()
-		print "Zeitgeist: active tab changed", doc.get_uri()
-		self.SendToZeitgeist(doc, Interpretation.FOCUS_EVENT)
 
 	def TabLoadedHandler(self, doc, data):
 		print "Zeitgeist: tab loaded document", doc.get_uri()
