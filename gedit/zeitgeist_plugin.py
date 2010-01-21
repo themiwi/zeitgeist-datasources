@@ -34,39 +34,46 @@ class ZeitgeistLogic:
 	def __init__(self, plugin, window):
 		self._window = window
 		self._plugin = plugin
-		self.docs = self._window.get_documents()
-		self._handler = self._window.connect("tab-removed", self.TabRemovedHandler)
-		self._handler = self._window.connect("active-tab-changed", self.TabChangedHandler)
-		self._tabs = 0
+		self._window.connect("tab-added", self.TabAddedHandler)
+		self._window.connect("tab-removed", self.TabRemovedHandler)
 
 	def deactivate(self):
-		self._window.disconnect(self._handler)
+		self._window.disconnect_by_func(self.TabAddedHandler)
+		self._window.disconnect_by_func(self.TabRemovedHandler)
 		self._window = None
 		self._plugin = None
-		self._handler = None
+
+	def TabAddedHandler(self, window, tab):
+		doc = tab.get_document()
+		print "Zeitgeist: loaded new tab ", doc.get_uri()
+		
+		"""
+		We don't send an OPEN_EVENT here because that will
+		be done after the document's 'loaded' signal is emitted.
+		
+		We do this because when if there are any empty tabs when
+		the user opens a file, the new file will replace the empty 
+		tab, and the document's 'loaded' signal will fire, but no
+		tab is added and therefore no 'tab-added' is fired.
+		"""
+		
+		doc.connect("saved", self.SaveDocHandler)	
+		doc.connect("loaded", self.TabLoadedHandler)
 
 	def TabRemovedHandler(self, window, tab):
 		doc = tab.get_document()
-		print "tab removed", doc.get_uri()
+		print "Zeitgeist: tab removed", doc.get_uri()
+		doc.disconnect_by_func(self.SaveDocHandler)
+		doc.disconnect_by_func(self.TabLoadedHandler)
 		self.SendToZeitgeist(doc, Interpretation.CLOSE_EVENT)
-		self.docs = self._window.get_documents()
 
-	def TabChangedHandler(self, window, tab):
-		doc = tab.get_document()
-		if self.docs.count(doc) == 0:
-			print "loaded new document ", doc.get_uri()
-			self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
-			doc.connect("saved", self.SaveDocHandler)	
-		else:		
-			print "tab changed", doc.get_uri()
-		self.docs = self._window.get_documents()
-		print "***", self.docs
+	def TabLoadedHandler(self, doc, data):
+		print "Zeitgeist: tab loaded document", doc.get_uri()
+		self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
 
 	def SaveDocHandler(self, doc, data):
-		print "saved document", doc.get_uri()
-		self.docs = self._window.get_documents()
+		print "Zeitgeist: saved document", doc.get_uri()
 		self.SendToZeitgeist(doc, Interpretation.SAVE_EVENT)
-		print "***", self.docs
 
 	def SendToZeitgeist(self, doc, event):
 		if doc.get_uri():
@@ -93,7 +100,6 @@ class ZeitgeistPlugin(gedit.Plugin):
 		self._instances = {}
 
 	def activate(self, window):
-		print window
 		self._instances[window] = ZeitgeistLogic(self, window)
 
 	def deactivate(self, window):
