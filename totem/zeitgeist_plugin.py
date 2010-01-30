@@ -99,10 +99,10 @@ class Zeitgeist(totem.Plugin):
 		self.totem_object = totem_object
 		self.totem_object.connect("file-opened", self.handle_opened)
 		self.totem_object.connect("file-closed", self.handle_closed)
-		#self.totem_object.connect("metadata-updated", self.do_update_metadata) 
-		print "BOOOOOOOOOOOYA"
-		print CLIENT.get_version()
+		self.totem_object.connect("metadata-updated", self.do_update_metadata) 
 		if CLIENT.get_version() >= [0, 3, 2, 999]:
+			print "BOOOOOOOOOOOYA"
+			print CLIENT.get_version()
 			CLIENT.register_data_source("1594", "Totem", "", [Event.new_for_values(actor="application://totem.desktop")])
 
 	def deactivate (self, totem):
@@ -137,9 +137,11 @@ class Zeitgeist(totem.Plugin):
 			self.last_metadata = self.current_metadata
 
 	def handle_opened(self, totem, uri):
+		self.counter = 0
 		self.current_uri = uri
 
 	def handle_closed(self, totem):
+		self.counter = 0
 		self.inform_closed()
 
 	def inform_opened(self):
@@ -152,6 +154,7 @@ class Zeitgeist(totem.Plugin):
 			self.SendToZeitgeist(self.last_metadata, Interpretation.CLOSE_EVENT)
 
 	def SendToZeitgeist(self, doc, event):
+		print doc["uri"]
 		if doc["uri"]:
 			subject = Subject.new_for_values(
 				uri=doc["uri"],
