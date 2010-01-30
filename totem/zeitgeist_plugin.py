@@ -102,7 +102,7 @@ class Zeitgeist(totem.Plugin):
 		#self.totem_object.connect("metadata-updated", self.do_update_metadata) 
 		print "BOOOOOOOOOOOYA"
 		print CLIENT.get_version()
-		if CLIENT.get_version() >= [0, 3, 2, 0]:
+		if CLIENT.get_version() >= [0, 3, 2, 999]:
 			CLIENT.register_data_source("1594", "Totem", "", [Event.new_for_values(actor="application://totem.desktop")])
 
 	def deactivate (self, totem):
