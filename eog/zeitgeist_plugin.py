@@ -42,8 +42,8 @@ class ZeitgeistPlugin(eog.Plugin):
             gobject.timeout_add(500, self.get_image, window)
             if CLIENT.get_version() >= [0, 3, 2, 999]:
                 CLIENT.register_data_source("9375", "Eye of GNOME", "",
-                                            [Event.new_for_values(actor="application://eog")]
-                                            )
+                                            [Event.new_for_values(actor="application://eog.desktop")]
+                                            )   
         window.connect("destroy", self.deactivate, window)
     
     def get_image(self, window):
