@@ -99,7 +99,7 @@ class Zeitgeist(totem.Plugin):
 		self.totem_object = totem_object
 		self.totem_object.connect("file-opened", self.handle_opened)
 		self.totem_object.connect("file-closed", self.handle_closed)
-		self.totem_object.connect("metadata-updated", self.do_update_metadata) 
+		#self.totem_object.connect("metadata-updated", self.do_update_metadata) 
 		if CLIENT.get_version() >= [0, 3, 2, 999]:
 			print "BOOOOOOOOOOOYA"
 			print CLIENT.get_version()
