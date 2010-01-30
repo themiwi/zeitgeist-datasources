@@ -22,11 +22,11 @@ import rhythmdb
 import gobject
 import time
 
-from zeitgeist.client import ZeitgeistDBusInterface
+from zeitgeist.client import ZeitgeistClient
 from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
 
 try:
-    IFACE = ZeitgeistDBusInterface()
+    IFACE = ZeitgeistClient()
 except RuntimeError, e:
     print "Unable to connect to Zeitgeist, won't send events. Reason: '%s'" %e
     IFACE = None
@@ -50,6 +50,11 @@ class ZeitgeistPlugin(rb.Plugin):
             self.__manual_switch = True
             self.__current_song = None
             self._shell = shell
+            
+            if IFACE.get_version() >= [0, 3, 2, 999]:
+                IFACE.register_data_source("5463", "Rhythmbox", "Play and organize your music collection",
+                                            [Event.new_for_values(actor="application://rhythmbox.desktop")]
+                                            )
         
     @staticmethod
     def get_song_info(db, entry):
@@ -132,7 +137,7 @@ class ZeitgeistPlugin(rb.Plugin):
             subjects=[subject,]
         )
         print event
-        IFACE.InsertEvents([event,])
+        IFACE.insert_event(event)
         
     def deactivate(self, shell):
         print "UNLOADING Zeitgeist plugin ......."
