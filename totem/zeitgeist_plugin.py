@@ -92,6 +92,7 @@ class Zeitgeist(totem.Plugin):
 		self.old_metadata = self.null_metadata.copy()
 		self.current_uri = None
 		self.last_metadata = None
+		self.last_action = []
 		self.current_metadata = self.null_metadata.copy()
 		self.counter = 0
 
@@ -99,7 +100,7 @@ class Zeitgeist(totem.Plugin):
 		self.totem_object = totem_object
 		self.totem_object.connect("file-opened", self.handle_opened)
 		self.totem_object.connect("file-closed", self.handle_closed)
-		#self.totem_object.connect("metadata-updated", self.do_update_metadata) 
+		self.totem_object.connect("metadata-updated", self.do_update_metadata) 
 		if CLIENT.get_version() >= [0, 3, 2, 999]:
 			print "BOOOOOOOOOOOYA"
 			print CLIENT.get_version()
@@ -110,29 +111,27 @@ class Zeitgeist(totem.Plugin):
 		print "deactivate"
 
 	def do_update_metadata(self, totem, artist, title, album, num):
-		self.current_metadata = self.null_metadata.copy()
-		if title:
-			self.current_metadata["title"] = title
-		if artist:
-			self.current_metadata["artist"] = artist
-		if album:
-			self.current_metadata["album"] = album
 		if self.current_uri:
-			self.current_metadata["uri"] = self.current_uri
-			################################
-			f = gio.File(self.current_uri)
-			path = f.get_path()
-			info = f.query_info("*")
-			mime_type = info.get_content_type()
-			###############################
-			self.current_metadata["mimetype"] = mime_type
-			if mime_type in VIDEO_MIMETYPES:
-				self.current_metadata["interpretation"] = Interpretation.VIDEO
-			else:
-				self.current_metadata["interpretation"] = Interpretation.MUSIC
-		self.counter += 1
-		if self.counter == 8:
-			self.counter = 0
+			self.current_metadata = self.null_metadata.copy()
+			if title:
+				self.current_metadata["title"] = title
+			if artist:
+				self.current_metadata["artist"] = artist
+			if album:
+				self.current_metadata["album"] = album
+			if self.current_uri:
+				self.current_metadata["uri"] = self.current_uri
+				################################
+				f = gio.File(self.current_uri)
+				path = f.get_path()
+				info = f.query_info("*")
+				mime_type = info.get_content_type()
+				###############################
+				self.current_metadata["mimetype"] = mime_type
+				if mime_type in VIDEO_MIMETYPES:
+					self.current_metadata["interpretation"] = Interpretation.VIDEO
+				else:
+					self.current_metadata["interpretation"] = Interpretation.MUSIC
 			self.inform_opened()
 			self.last_metadata = self.current_metadata
 
@@ -145,13 +144,16 @@ class Zeitgeist(totem.Plugin):
 		self.inform_closed()
 
 	def inform_opened(self):
-		print "OPENED", self.current_metadata
-		self.SendToZeitgeist(self.current_metadata, Interpretation.OPEN_EVENT)
+		last_action = ["OPENED", self.current_metadata]
+		if not self.last_action == last_action:
+			self.last_action = last_action
+			print self.last_action
+		#self.SendToZeitgeist(self.current_metadata, Interpretation.OPEN_EVENT)
 
 	def inform_closed(self):
 		print "CLOSED", self.last_metadata
-		if self.last_metadata:
-			self.SendToZeitgeist(self.last_metadata, Interpretation.CLOSE_EVENT)
+		#if self.last_metadata:
+		#	self.SendToZeitgeist(self.last_metadata, Interpretation.CLOSE_EVENT)
 
 	def SendToZeitgeist(self, doc, event):
 		print doc["uri"]
