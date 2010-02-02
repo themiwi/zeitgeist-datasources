@@ -86,9 +86,9 @@ class Zeitgeist(totem.Plugin):
 	def __init__ (self):
 		totem.Plugin.__init__(self)
 		self.totem_object = None
-		self.null_metadata = {"year" : "", "tracknumber" : "", "location" : "",
-			"title" : "", "album" : "", "time" : "", "genre" : "", "artist" : "",
-			 "uri" : "", "mimetype":"", "interpretation":""}
+		self.null_metadata = {"year" : None, "tracknumber" : None, "location" : None,
+			"title" : None, "album" : None, "time" : None, "genre" : None, "artist" : None,
+			 "uri" : None, "mimetype":None, "interpretation":None}
 		self.old_metadata = self.null_metadata.copy()
 		self.current_uri = None
 		self.last_metadata = None
@@ -113,12 +113,7 @@ class Zeitgeist(totem.Plugin):
 	def do_update_metadata(self, totem, artist, title, album, num):
 		if self.current_uri:
 			self.current_metadata = self.null_metadata.copy()
-			if title:
-				self.current_metadata["title"] = title
-			if artist:
-				self.current_metadata["artist"] = artist
-			if album:
-				self.current_metadata["album"] = album
+			self.current_metadata["title"] = self.current_uri.rpartition("/")[-1]
 			if self.current_uri:
 				self.current_metadata["uri"] = self.current_uri
 				################################
@@ -136,22 +131,22 @@ class Zeitgeist(totem.Plugin):
 			self.last_metadata = self.current_metadata
 
 	def handle_opened(self, totem, uri):
-		self.counter = 0
 		self.current_uri = uri
 
 	def handle_closed(self, totem):
-		self.counter = 0
 		self.inform_closed()
 
 	def inform_opened(self):
-		last_action = ["OPENED", self.current_metadata["uri"]]
-		if not self.last_action == last_action:
-			self.last_action = last_action
-			print self.last_action
-			self.SendToZeitgeist(self.current_metadata, Interpretation.OPEN_EVENT)
+		#print self.current_metadata["uri"], self.current_metadata["title"], self.current_metadata["mimetype"]
+		if self.current_metadata["uri"] and self.current_metadata["title"] and self.current_metadata["mimetype"]:
+			last_action = ["OPENED", self.current_metadata["uri"], self.current_metadata["title"], self.current_metadata["mimetype"]]
+			if not self.last_action == last_action:
+				self.last_action = last_action
+				print self.last_action
+				self.SendToZeitgeist(self.current_metadata, Interpretation.OPEN_EVENT)
 
 	def inform_closed(self):
-		last_action = ["CLOSED", self.current_metadata["uri"]]
+		last_action = ["CLOSED", self.current_metadata["uri"], self.current_metadata["title"], self.current_metadata["mimetype"]]
 		if not self.last_action == last_action:
 			self.last_action = last_action
 			print self.last_action
@@ -159,7 +154,8 @@ class Zeitgeist(totem.Plugin):
 
 	def SendToZeitgeist(self, doc, event):
 		#print doc["uri"]
-		if doc["uri"]:
+		#print doc
+		if doc["uri"] and doc["mimetype"] and doc["title"]:
 			subject = Subject.new_for_values(
 				uri=doc["uri"],
 				text=doc["title"],
