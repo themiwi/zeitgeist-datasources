@@ -34,6 +34,7 @@ class ZeitgeistLogic:
 	def __init__(self, plugin, window):
 		self._window = window
 		self._plugin = plugin
+		self.current_uri = None
 		self._window.connect("tab-added", self.TabAddedHandler)
 		self._window.connect("tab-removed", self.TabRemovedHandler)
 
@@ -46,6 +47,7 @@ class ZeitgeistLogic:
 	def TabAddedHandler(self, window, tab):
 		doc = tab.get_document()
 		print "Zeitgeist: loaded new tab ", doc.get_uri()
+		self.current_uri = doc.get_uri()
 		
 		"""
 		We don't send an OPEN_EVENT here because that will
@@ -68,8 +70,10 @@ class ZeitgeistLogic:
 		self.SendToZeitgeist(doc, Interpretation.CLOSE_EVENT)
 
 	def TabLoadedHandler(self, doc, data):
-		print "Zeitgeist: tab loaded document", doc.get_uri()
-		self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
+		if not self.current_uri == doc.get_uri():
+			self.current_uri = doc.get_uri()
+			print "Zeitgeist: tab loaded document", doc.get_uri()
+			self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
 
 	def SaveDocHandler(self, doc, data):
 		print "Zeitgeist: saved document", doc.get_uri()
@@ -93,6 +97,7 @@ class ZeitgeistLogic:
 				subjects=[subject,]
 			)
 			CLIENT.insert_event(event)
+
 
 class ZeitgeistPlugin(gedit.Plugin):
 	def __init__(self):

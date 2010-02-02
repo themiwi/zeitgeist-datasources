@@ -144,19 +144,21 @@ class Zeitgeist(totem.Plugin):
 		self.inform_closed()
 
 	def inform_opened(self):
-		last_action = ["OPENED", self.current_metadata]
+		last_action = ["OPENED", self.current_metadata["uri"]]
 		if not self.last_action == last_action:
 			self.last_action = last_action
 			print self.last_action
-		#self.SendToZeitgeist(self.current_metadata, Interpretation.OPEN_EVENT)
+			self.SendToZeitgeist(self.current_metadata, Interpretation.OPEN_EVENT)
 
 	def inform_closed(self):
-		print "CLOSED", self.last_metadata
-		#if self.last_metadata:
-		#	self.SendToZeitgeist(self.last_metadata, Interpretation.CLOSE_EVENT)
+		last_action = ["CLOSED", self.current_metadata["uri"]]
+		if not self.last_action == last_action:
+			self.last_action = last_action
+			print self.last_action
+			self.SendToZeitgeist(self.last_metadata, Interpretation.CLOSE_EVENT)
 
 	def SendToZeitgeist(self, doc, event):
-		print doc["uri"]
+		#print doc["uri"]
 		if doc["uri"]:
 			subject = Subject.new_for_values(
 				uri=doc["uri"],
