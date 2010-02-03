@@ -1,0 +1,21 @@
+<Addin id="Zeitgeist"
+    namespace="Tomboy"
+    name="Zeitgeist Integration"
+    author="Tomboy Project"
+    description="Logs usage data to Zeitgeist."
+    category="Tools"
+    defaultEnabled="true"
+    version="0.1">
+
+    <Runtime>
+        <Import assembly="Zeitgeist.dll" />
+    </Runtime>
+
+    <Dependencies>
+        <Addin id="Tomboy" version="1.1.2" />
+    </Dependencies>
+
+    <Extension path="/Tomboy/ApplicationAddins">
+        <ApplicationAddin type="Tomboy.Zeitgeist.ZeitgeistAddin" />
+    </Extension>
+</Addin>
