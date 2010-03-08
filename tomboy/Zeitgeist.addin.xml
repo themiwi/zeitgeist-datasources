@@ -1,9 +1,9 @@
 <Addin id="Zeitgeist"
     namespace="Tomboy"
     name="Zeitgeist Integration"
-    author="Tomboy Project"
+    author="Laszlo Pandy <laszlok2@gmail.com>"
     description="Logs usage data to Zeitgeist."
-    category="Tools"
+    category="Desktop Integration"
     defaultEnabled="true"
     version="0.1">
 
@@ -12,7 +12,7 @@
     </Runtime>
 
     <Dependencies>
-        <Addin id="Tomboy" version="1.1.2" />
+        <Addin id="Tomboy" version="0.10" />
     </Dependencies>
 
     <Extension path="/Tomboy/ApplicationAddins">
