@@ -82,7 +82,7 @@ var ZeitgeistExtension = {
         ZeitgeistExtension.runScript(["--last", "--iofile", tmpfile.path],
             function(p, finishState, unused_data) {
                 var err_code = p.QueryInterface(
-                    Components.interfaces.nsIProcess2
+                    Components.interfaces.nsIProcess
                 ).exitValue;
                 switch (err_code) {
                     case 0:
@@ -167,9 +167,9 @@ var ZeitgeistExtension = {
         // Close container when done
         // see : https://developer.mozilla.org/en/nsINavHistoryContainerResultNode
         cont.containerOpen = false;
-        
-        var appcontent = document.getElementById("appcontent");   // browser
-        if(appcontent) {
+
+        var appcontent = document.getElementById("appcontent"); // browser
+        if (appcontent) {
             appcontent.addEventListener(
                 "DOMContentLoaded", ZeitgeistExtension.onPageLoad, true
             );
@@ -208,6 +208,10 @@ var ZeitgeistExtension = {
     onPageLoad: function(aEvent) {
         var doc = aEvent.originalTarget; // doc is document that triggered 
                                          // "onload" event
+        // we don't care about iframes and such
+        if (doc != doc.defaultView.top.document || 
+            doc.documentURIObject.schemeIs("about")) return;
+
         debug("triggered onload event for: "+doc.location);
         
         // only log events in non-private mode
@@ -250,9 +254,9 @@ var ZeitgeistExtension = {
             );
             return "unknown";
         }
-    },  
+    },
         
-    runScript: function(args, callback) {    
+    runScript: function(args, callback) {
         // find the script within the extension
         const DIR_SERVICE = Components.classes[
             "@mozilla.org/extensions/manager;1"
@@ -276,6 +280,8 @@ var ZeitgeistExtension = {
                      .createInstance(Components.interfaces.nsILocalFile);
         try {
             file.initWithPath(zeitgeist.path);
+            // see : http://blog.mozilla.com/addons/2010/01/22/broken-executables-in-extensions-in-firefox-3-6/
+            file.permissions = 0755;
         } catch (error) {
             log_console("error finding zeitgeist.py: " + error);
             Components.utils.reportError("error finding zeitgeist.py: "+error);
@@ -284,7 +290,7 @@ var ZeitgeistExtension = {
 
         // create an nsIProcess
         var process = Components.classes["@mozilla.org/process/util;1"]
-                        .createInstance(Components.interfaces.nsIProcess2);
+                        .createInstance(Components.interfaces.nsIProcess);
         try {
             process.init(file);
         } catch (error) {
@@ -295,7 +301,7 @@ var ZeitgeistExtension = {
         if (!callback) {
             options = {
                 observe: function(p, finishState, unused_data) {
-                    var err_code = p.QueryInterface(Components.interfaces.nsIProcess2).exitValue;
+                    var err_code = p.QueryInterface(Components.interfaces.nsIProcess).exitValue;
                     switch (err_code) {
                         case 0:
                             break;
