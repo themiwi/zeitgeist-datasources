@@ -14,6 +14,7 @@
 //      MA 02110-1301, USA.
 //
 //      Copyright 2009 Markus Korn <thekorn@gmx.de>
+//                2010 Michal Hruby <michal.mhr@gmail.com>
 
 window.addEventListener("load", function() { ZeitgeistExtension.init(); }, false);
 
@@ -51,160 +52,21 @@ function getTraceback(fileobj) {
 }
 
 var ZeitgeistExtension = {
+    uriInfo: [],
+
     init: function() {
         debug("init zeitgeist extension");
         var appcontent = document.getElementById("appcontent");   // browser
-        if(appcontent) {
-            ZeitgeistExtension.loadPastEvents();
-        }
-    },
-    
-    loadPastEvents: function() {
-        //~ 1.) create tempfile
-        //~ 2.) get last event to this file
-        //~ 3.) read last event from this file
-        //~ 4.) query history after last event
-        
-        
-        // find OS temp dir to put the tempfile in
-        // https://developer.mozilla.org/index.php?title=File_I%2F%2FO#Getting_special_files
-        var tmpdir = Components.classes["@mozilla.org/file/directory_service;1"]
-                     .getService(Components.interfaces.nsIProperties)
-                     .get("TmpD", Components.interfaces.nsIFile);
-        // create a randomly named tempfile in the tempdir
-        var tmpfile = Components.classes["@mozilla.org/file/local;1"]
-                     .createInstance(Components.interfaces.nsILocalFile);
-        tmpfile.initWithPath(
-            tmpdir.path + "/zeitgeist.firefox.history." + Math.random()
-        );
-        tmpfile.createUnique(tmpfile.NORMAL_FILE_TYPE, 0600);
-        
-        ZeitgeistExtension.runScript(["--last", "--iofile", tmpfile.path],
-            function(p, finishState, unused_data) {
-                var err_code = p.QueryInterface(
-                    Components.interfaces.nsIProcess
-                ).exitValue;
-                switch (err_code) {
-                    case 0:
-                        ZeitgeistExtension.readLastEvent(tmpfile);
-                        break;
-                    case 100:
-                        Components.utils.reportError(
-                            "Zeitgeist daemon is not running and can not be launched"
-                        );
-                        break;
-                    default:
-                        traceback = getTraceback(tmpfile);
-                        Components.utils.reportError(
-                            "Unknown Zeitgeist Error"+err_code+"\nTraceback\n"+traceback
-                        );
-                        break;
-                }
-            }
-        );
-    },
-    
-    readLastEvent: function(tmpfile) {        
-        var fileStream = Components.classes[
-            "@mozilla.org/network/file-input-stream;1"
-        ].createInstance(Components.interfaces.nsIFileInputStream);
-        debug("getting last inserted event from zeitgeist");
-        fileStream.init(tmpfile, -1, 0, 0);        
-        fileStream.QueryInterface(Components.interfaces.nsILineInputStream);
-
-        var line = {};
-        fileStream.readLine(line);
-        if (null != line.value) {
-           var timestamp = line.value;
-        }
-        fileStream.close();
-        debug("last insert at "+timestamp);
-        ZeitgeistExtension.loadHistory(timestamp, tmpfile);
-    },
-    
-    loadHistory: function(timestamp, tmpfile) {
-        debug("querying history beginning at "+timestamp);
-        var historyService = Components.classes[
-            "@mozilla.org/browser/nav-history-service;1"
-        ].getService(Components.interfaces.nsINavHistoryService);
-
-        // No query options set will get all history, sorted in database order,
-        // which is nsINavHistoryQueryOptions.SORT_BY_NONE.
-        var options = historyService.getNewQueryOptions();
-        // return one entry for each time a page was visited matching the 
-        // given query.
-        options.resultType = Components.interfaces
-            .nsINavHistoryQueryOptions.RESULTS_AS_VISIT;
-
-        // No query parameters will return everything
-        var query = historyService.getNewQuery();
-        query.beginTimeReference = query.TIME_RELATIVE_EPOCH;
-        query.beginTime = timestamp * 1000000;
-
-        // execute the query
-        // result is instance of nsINavHistoryResult
-        var result = historyService.executeQuery(query, options);
-        
-        var history = new Array();
-        var cont = result.root;
-        cont.containerOpen = true;
-        
-        for (var i = 0; i < cont.childCount; i ++) {
-
-            var node = cont.getChild(i);
-            // "node" attributes contains the information
-            // (e.g. uri, title, time, icon...)
-            // see : https://developer.mozilla.org/en/nsINavHistoryResultNode
-            var entry = new Array();
-            entry[0] = node.time;
-            entry[1] = node.uri;
-            entry[2] = node.title;
-            //~ entry[3] = node.icon;
-            history.push((entry));
-            
-        }
-        
-        // Close container when done
-        // see : https://developer.mozilla.org/en/nsINavHistoryContainerResultNode
-        cont.containerOpen = false;
-
-        var appcontent = document.getElementById("appcontent"); // browser
         if (appcontent) {
             appcontent.addEventListener(
                 "DOMContentLoaded", ZeitgeistExtension.onPageLoad, true
             );
             debug("successfully registered onPageLoad listener");
+            ZeitgeistExtension.monitorHistory();
+            ZeitgeistExtension.monitorDownloads();
         }
-        
-        //~ var content = unescape(encodeURIComponent(history.toString()));
-        var content = unescape(encodeURIComponent(history.toSource()));
-                
-        var fileStream = Components.classes[
-            "@mozilla.org/network/file-output-stream;1"
-        ].createInstance(Components.interfaces.nsIFileOutputStream);
-
-        var header = "{\"bulk\": ";
-        var footer = "}";
-
-        fileStream.init(tmpfile, -1, -1, 0);
-        fileStream.write(header, header.length);
-        fileStream.flush();
-        fileStream.write(content, content.length);
-        fileStream.flush();
-        fileStream.write(footer, footer.length);
-        fileStream.flush();
-        fileStream.close();
-        var current_profile = ZeitgeistExtension.getProfileName();
-        
-        var args = ["--bulk", "--iofile", tmpfile.path, "--tags",
-            unescape(encodeURIComponent(current_profile))
-        ];
-        
-        debug("sending "+history.length+" events to the zeitgeist engine");
-        ZeitgeistExtension.runScript(args);
-        
     },
-
+    
     onPageLoad: function(aEvent) {
         var doc = aEvent.originalTarget; // doc is document that triggered 
                                          // "onload" event
@@ -212,30 +74,32 @@ var ZeitgeistExtension = {
         if (doc != doc.defaultView.top.document || 
             doc.documentURIObject.schemeIs("about")) return;
 
-        debug("triggered onload event for: "+doc.location);
+        //debug("triggered onLoad event for: "+doc.location);
         
         // only log events in non-private mode
         var pbs = Components.classes[
             "@mozilla.org/privatebrowsing;1"
         ].getService(Components.interfaces.nsIPrivateBrowsingService);  
-        var inPrivateBrowsingMode = pbs.privateBrowsingEnabled;  
+        var inPrivateBrowsingMode = pbs.privateBrowsingEnabled;
         if (inPrivateBrowsingMode) {
-            debug("Don't send events to zeitgeist in private mode");
             return;
         }
-        
-        // do something with the loaded page.
-        // doc.location is a Location object (see below for a link).
-        // You can use it to make your code executed on certain pages only.
-        var current_profile = ZeitgeistExtension.getProfileName();
-        
-        var args = [
-            "--location", unescape(encodeURIComponent(doc.location)),
-            "--title", unescape(encodeURIComponent(doc.title)),
-            "--tags", unescape(encodeURIComponent(current_profile)),
-        ];
-      
-        ZeitgeistExtension.runScript(args);
+
+        var info = ZeitgeistExtension.uriInfo[doc.documentURIObject.spec];
+        if (!info) {
+            info = new Array();
+            ZeitgeistExtension.uriInfo[doc.documentURIObject.spec] = info;
+        }
+
+        info["title"] = unescape(encodeURIComponent(doc.title));
+        info["mimetype"] = doc.contentType;
+        info["loaded"] = true;
+
+        if (info["visited"]) {
+            ZeitgeistExtension.sendPageVisit(doc.documentURIObject, info);
+            // we're done delete this info
+            ZeitgeistExtension.uriInfo[doc.documentURIObject.spec] = null;
+        }
     },
     
     getProfileName: function() {
@@ -355,5 +219,92 @@ var ZeitgeistExtension = {
         // Second and third params are used to pass command-line arguments
         // to the process.
         process.runAsync(args, args.length, options);
+    },
+
+    sendPageVisit: function(uri, pageInfo) {
+        var current_profile = this.getProfileName();
+
+        var title = pageInfo["title"];
+        var mimetype = pageInfo["mimetype"];
+        
+        debug("sending page visit: " + uri.spec + "[" +mimetype+ "] " + title);
+        var args = [
+            "--location", unescape(encodeURIComponent(uri.spec)),
+            "--title", title,
+            "--mimetype", mimetype,
+            "--tags", unescape(encodeURIComponent(current_profile)),
+        ];
+
+        this.runScript(args);
+    },
+
+    monitorHistory: function() {
+        var historyService = Components.classes[
+            "@mozilla.org/browser/nav-history-service;1"
+        ].getService(Components.interfaces.nsINavHistoryService);
+
+        historyService.addObserver({
+            onBeforeDeleteURI : function (uri) {},
+            onBeginUpdateBatch : function () {},
+            onClearHistory : function () {},
+            onDeleteURI : function (uri) {},
+            onEndUpdateBatch : function () {},
+            onPageChanged : function (uri, what, val) {},
+            onPageExpired : function (uri, visitTime, whole) {},
+            onTitleChanged : function (uri, pageTitle) {},
+            onVisit : function (uri, visitId, time, sessionId, referId, tt) {
+                ZeitgeistExtension.pageVisited(uri, time);
+            }
+        }, false);
+    },
+
+    pageVisited: function(uri, time) {
+        // only log events in non-private mode
+        var pbs = Components.classes[
+            "@mozilla.org/privatebrowsing;1"
+        ].getService(Components.interfaces.nsIPrivateBrowsingService);  
+        var inPrivateBrowsingMode = pbs.privateBrowsingEnabled;  
+        if (inPrivateBrowsingMode) {
+            return;
+        }
+
+        var info = ZeitgeistExtension.uriInfo[uri.spec];
+        if (!info) {
+            info = new Array();
+            ZeitgeistExtension.uriInfo[uri.spec] = info;
+        }
+
+        info["visited"] = true;
+
+        if (info["loaded"]) {
+            ZeitgeistExtension.sendPageVisit(uri, info);
+            // we're done delete this info
+            ZeitgeistExtension.uriInfo[uri.spec] = null;
+        }
+    },
+
+    monitorDownloads: function() {
+        var downloadManager = Components.classes[
+            "@mozilla.org/download-manager;1"
+        ].getService(Components.interfaces.nsIDownloadManager);
+        
+        downloadManager.addListener({
+            onSecurityChange : function (prog, req, state, dl) {},
+            onProgressChange : function (prog, req, progCur, progMax, tProg, tProgMax,dl) {},
+            onStateChange : function (prog, req, flags, status, dl) {},
+            onDownloadStateChange : function (state, dl) {
+                if (dl.state == Components.interfaces.nsIDownloadManager.DOWNLOAD_FINISHED) {
+                    ZeitgeistExtension.downloadFinished (dl);
+                }
+            }
+        });
+    },
+
+    downloadFinished: function(download) {
+        var path = download.targetFile.QueryInterface(
+            Components.interfaces.nsIFile).path;
+        var title = download.displayName;
+        debug("download finished for: " + title + " [" + path + "]");
+        this.runScript(["--download", "--location", path, "--title", title]);
     }
 }
