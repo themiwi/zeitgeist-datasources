@@ -58,8 +58,8 @@ def post_commit(local, master, old_revno, old_revid, new_revno, new_revid):
         interpretation = Interpretation.MODIFY_EVENT
     subject = Subject.new_for_values(
         uri=unicode(master.base),
-        interpretation=unicode(Interpretation.SOURCECODE),
-        manifestation=unicode(Manifestation.FILE),
+        interpretation=unicode(Interpretation.SOURCE_CODE),
+        manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
         text=unicode(revision.message),
         origin=unicode(master.base),
     )            
