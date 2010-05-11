@@ -1,18 +1,24 @@
-GECKO_SDK_PATH = /usr/include/xulrunner-1.9.2.3
-XPID_BIN = /usr/lib/xulrunner-1.9.2.3/xpidl
+MOZILLA_PLUGIN_FLAGS = $(shell pkg-config --cflags mozilla-plugin)
+XUL_SDKDIR = $(shell pkg-config --variable=sdkdir libxul)
+XUL_IDLDIR = $(shell pkg-config --variable=idldir libxul)
+XPID_BIN = $(XUL_SDKDIR)/bin/xpidl
 XPID_TARGET = zeitgeist.h zeitgeist.xpt
 
 #also see: https://developer.mozilla.org/en/XPCOM_Glue
-XUL_FLAGS += $(shell pkg-config --cflags --libs /usr/lib/pkgconfig/libxul.pc)
+XUL_FLAGS += $(shell pkg-config --cflags libxul)
+XUL_LIBS += $(shell pkg-config --libs libxul)
+
 #we also need to link against libzeitgeist-1.0
 #this requires ldconfig magic
-XUL_FLAGS += -lzeitgeist-1.0
-
-ZG_FLAGS = $(shell pkg-config --cflags --libs /usr/lib/pkgconfig/glib-2.0.pc /usr/lib/pkgconfig/gobject-2.0.pc)
-ZG_FLAGS += -I/usr/local/include/zeitgeist-1.0
+ZG_FLAGS = $(shell pkg-config --cflags zeitgeist-1.0)
+ZG_LIBS = $(shell pkg-config --libs zeitgeist-1.0)
 
 CXX=g++
-INCLUDE = -I $(GECKO_SDK_PATH) -include "xpcom-config.h" -I /usr/include/nspr
+INCLUDE = \
+	$(MOZILLA_PLUGIN_FLAGS) \
+	$(ZG_FLAGS) \
+	$(XUL_FLAGS) \
+	-include "xpcom-config.h"
 
 DEBUG=y
 ifeq ($(DEBUG), y)
@@ -24,7 +30,7 @@ endif
 OBJECTS = ZeitgeistModule.o  ZeitgeistComponent.o
 
 %.o:%.cpp
-	$(CXX) -fPIC -c -o $@ $(FLAGS) $(INCLUDE) $(ZG_FLAGS) $*.cpp
+	$(CXX) -fPIC -c -o $@ $(FLAGS) $(INCLUDE) $*.cpp
 
 LIB_SUFFIX=.so
 LIBRARY=zeitgeist_xpcom
@@ -33,11 +39,11 @@ LIB_FULL=lib$(LIBRARY)$(LIB_SUFFIX)
 all: xpcomheader $(OBJECTS) $(LIB_FULL)
 
 xpcomheader:
-	$(XPID_BIN) -m header -I /usr/share/idl/xulrunner-1.9.2.3 -o zeitgeist zeitgeist.idl
-	$(XPID_BIN) -m typelib -I /usr/share/idl/xulrunner-1.9.2.3 -o zeitgeist zeitgeist.idl
+	$(XPID_BIN) -m header -I $(XUL_IDLDIR) -o zeitgeist zeitgeist.idl
+	$(XPID_BIN) -m typelib -I $(XUL_IDLDIR) -o zeitgeist zeitgeist.idl
 
 $(LIB_FULL):
-	$(CXX) -shared -o $(LIB_FULL) $(OBJECTS) $(XUL_FLAGS)
+	$(CXX) -Wl,--no-undefined -shared -o $(LIB_FULL) $(OBJECTS) $(XUL_LIBS) $(ZG_LIBS)
 
 .PHONY : clean
 
