@@ -124,7 +124,7 @@ class ZeitgeistPlugin(rb.Plugin):
         
         subject = Subject.new_for_values(
             uri=song["location"],
-            interpretation=unicode(Interpretation.MUSIC),
+            interpretation=unicode(Interpretation.AUDIO),
             manifestation=unicode(Manifestation.FILE),
             #~ origin="", #TBD
             mimetype=song["mimetype"],
