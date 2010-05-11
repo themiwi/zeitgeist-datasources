@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<overlay id="zeitgeist" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+	<script type="application/x-javascript"><![CDATA[
+		var zeitgeistgluexpcominterface = null;
+
+		var make_pattern = function(pattern) {
+			for (item in pattern) {
+				// alert(pattern[item]);
+				pattern[item] = new RegExp(pattern[item]);
+			};
+			return pattern;
+		};
+
+		var ZeitgeistPrefObserver = {
+			register: function() {
+				// First we'll need the preference services to look for preferences.
+				var prefService = Components.classes["@mozilla.org/preferences-service;1"]
+					.getService(Components.interfaces.nsIPrefService);
+
+				// For this._branch we ask that the preferences for extensions.myextension. and children
+				this._branch = prefService.getBranch("extensions.zeitgeist.");
+
+				// Now we queue the interface called nsIPrefBranch2. This interface is described as:  
+				// "nsIPrefBranch2 allows clients to observe changes to pref values."
+				this._branch.QueryInterface(Components.interfaces.nsIPrefBranch2);
+
+				// Finally add the observer.
+				this._branch.addObserver("", this, false);
+			},
+
+			unregister: function() {
+				if(!this._branch) return;
+				this._branch.removeObserver("", this);
+			},
+
+			observe: function(aSubject, aTopic, aData) {
+				if(aTopic != "nsPref:changed") return;
+					// aSubject is the nsIPrefBranch we're observing (after appropriate QI)
+					// aData is the name of the pref that's been changed (relative to aSubject)
+					switch (aData) {
+						case "ignored_uris":
+							// extensions.zeitgeist.ignored_uris was changed
+							pattern = this.get_string(aData);
+							// alert(pattern);
+							ignored_uris = make_pattern(pattern);
+							break;
+					}
+			},
+			get_string: function(key) {
+				try {
+					return JSON.parse(this._branch.getCharPref(key));
+				} catch(err) {
+					// this means there is no such config value
+					// ignoring this error
+					//alert(key + " : " + err);
+				};
+			}
+		}
+		ZeitgeistPrefObserver.register();
+		ignored_uris = make_pattern(ZeitgeistPrefObserver.get_string("ignored_uris"));
+		// alert("IGNORE" + ignored_uris);
+
+		ignore_uri = function(uri) {
+			for (pattern in ignored_uris) {
+				if (ignored_uris[pattern].test(uri)) {
+					// alert("ignored " + uri);
+					return true;
+				};
+			};
+			return false;
+		};
+
+		try {
+			if(zeitgeistgluexpcominterface == null) {
+				netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+				zeitgeistgluexpcominterface = Components.
+					classes["@zeitgeist-project.com/DATAPROVIDER/firefox-xpcom;1"].
+					createInstance(Components.interfaces.zeitgeist);
+			}
+		} catch(err) {
+			alert(err);
+		}
+		
+		var ZeitgeistProgressListener = {
+			onStateChange: function(aBrowser, aProgress, aRequest, aStateFlags) {
+				if (aStateFlags & Components.interfaces.nsIWebProgressListener.STATE_STOP) {
+					var uri = aBrowser.currentURI.spec;
+					if (aRequest.name == uri && !ignore_uri(uri)) {
+						zeitgeistgluexpcominterface.insert(
+							uri,
+							aBrowser.contentTitle
+						);
+					}
+				}
+			},
+			// we don't implement this methods
+			onStatusChange: function(){},
+			onLocationChange: function(){},
+			onSecurityChange: function(){},
+			onProgressChange: function(){},
+		};
+
+
+		var zeitgeist = {
+			init: function() {
+				gBrowser.addTabsProgressListener(ZeitgeistProgressListener);
+			},
+			uninit: function() {
+				gBrowser.removeTabsProgressListener(ZeitgeistProgressListener);
+			},
+		};
+
+		window.addEventListener("load", function() {zeitgeist.init()}, false);
+		window.addEventListener("unload", function() {zeitgeist.uninit()}, false);
+		
+	]]></script>
+</overlay>
