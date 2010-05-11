@@ -126,7 +126,7 @@ class Zeitgeist(totem.Plugin):
 				if mime_type in VIDEO_MIMETYPES:
 					self.current_metadata["interpretation"] = Interpretation.VIDEO
 				else:
-					self.current_metadata["interpretation"] = Interpretation.MUSIC
+					self.current_metadata["interpretation"] = Interpretation.AUDIO
 			self.inform_opened()
 			self.last_metadata = self.current_metadata
 
