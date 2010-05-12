@@ -86,10 +86,10 @@ class ZeitgeistPlugin(rb.Plugin):
     def playing_song_changed(self, shell, entry):
         print ("got playing_song_changed signal", shell, entry)
         if self.__current_song is not None:
-            self.send_to_zeitgeist_async(self.__current_song, Interpretation.CLOSE_EVENT)
+            self.send_to_zeitgeist_async(self.__current_song, Interpretation.LEAVE_EVENT)
 
         if entry is not None:
-	        self.send_to_zeitgeist_async(entry, Interpretation.OPEN_EVENT)
+	        self.send_to_zeitgeist_async(entry, Interpretation.ACCESS_EVENT)
 
         self.__current_song = entry
         gobject.idle_add(self.reset_manual_switch)
@@ -125,7 +125,7 @@ class ZeitgeistPlugin(rb.Plugin):
         subject = Subject.new_for_values(
             uri=song["location"],
             interpretation=unicode(Interpretation.AUDIO),
-            manifestation=unicode(Manifestation.FILE),
+            manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
             #~ origin="", #TBD
             mimetype=song["mimetype"],
             text=" - ".join([song["title"], song["artist"], song["album"]])

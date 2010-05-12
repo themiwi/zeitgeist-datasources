@@ -54,13 +54,13 @@ class ZeitgeistPlugin(eog.Plugin):
             subject = Subject.new_for_values(
                 uri=file_obj.get_uri(),
                 interpretation=unicode(Interpretation.IMAGE),
-                manifestation=unicode(Manifestation.FILE),
+                manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
                 origin=file_obj.get_parent().get_uri(),
                 #~ mimetype="", #TBD                
             )            
             event = Event.new_for_values(
                 timestamp=int(time.time()*1000),
-                interpretation=unicode(Interpretation.VISIT_EVENT),
+                interpretation=unicode(Interpretation.ACCESS_EVENT),
                 manifestation=unicode(Manifestation.USER_ACTIVITY),
                 actor="application://eog.desktop",
                 subjects=[subject,]
