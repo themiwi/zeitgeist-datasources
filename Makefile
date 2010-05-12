@@ -1,10 +1,11 @@
-#missing: firefox, tomnboy
+#missing: tomnboy
 
 DATAPROVIDERS = \
 	bzr \
 	eog \
 	epiphany \
 	firefox-libzg \
+	firefox \
 	gedit \
 	rhythmbox \
 	totem
