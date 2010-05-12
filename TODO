@@ -6,3 +6,15 @@ Create Dataprovider for:
 	
 	* chromium
 	* universal GIO dataprovider
+	* anjuta
+	* banshee
+	* brasero
+	* cheese
+	* eclipse
+	* f-spot
+	* gimp
+	* liferea
+	* monodevelop
+	* nautilus/gvfs
+	* open office
+	* thunderbird (maybe we can use the firefox extension here too)
