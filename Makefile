@@ -1,6 +1,7 @@
 DATAPROVIDERS = \
 	firefox-libzg \
 	bzr \
+	eog \
 
 
 define do-recursive
