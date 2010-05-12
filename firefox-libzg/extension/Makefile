@@ -1,4 +1,11 @@
-EXTENSION_CONTENT = defaults chrome chrome.manifest install.rdf components/libzeitgeist_xpcom.so components/zeitgeist.xpt
+EXTENSION_CONTENT = \
+	defaults \
+	chrome \
+	license.txt \
+	chrome.manifest \
+	install.rdf \
+	components/libzeitgeist_xpcom.so \
+	components/zeitgeist.xpt
 
 all: clean build
 
@@ -8,7 +15,5 @@ comp:
 clean:
 	$(MAKE) --directory=components clean
 
-build: 
-	$(MAKE) comp
+build: comp
 	zip -r ../ZeitgeistDataprovider.xpi $(EXTENSION_CONTENT)
-	

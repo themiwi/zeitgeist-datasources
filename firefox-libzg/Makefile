@@ -11,5 +11,13 @@ clean:
 	-rm -f *.xpi
 	$(MAKE) --directory=extension clean
 
-install:
+install: ;
+	
+uninstall: ;
+
+local-install:
 	cp ZeitgeistDataprovider.xpi ~/.mozilla/firefox/$(TARGET_PROFILE)/extensions
+
+local-uninstall:
+	-rm -rf ~/.mozilla/firefox/$(TARGET_PROFILE)/extensions/xpcom_firefox\@zeitgeist-project.com
+	-rm -rf ~/.mozilla/firefox/$(TARGET_PROFILE)/extensions/ZeitgeistDataprovider.xpi
