@@ -1,0 +1,19 @@
+Collection of Dataprovider for Zeitgeist
+========================================
+
+
+
+
+
+
+
+Installation
+============
+
+Various Make targets:
+	make
+	make install
+	make uninstall
+	make local-install
+	make local-uninstall
+	make clean
