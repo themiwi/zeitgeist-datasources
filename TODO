@@ -1,1 +1,8 @@
-gedit and totem need zeitgeist bindings
+Create Dataprovider for:
+	* evolution (using libzeitgeist seems like the best way here) (LP: #485698)
+	* pidgin (LP: #364068)
+	* telepathy (LP: #552956) (sjokkis is working on it)
+	* Netbeans (LP: #510535)
+	
+	* chromium
+	* universal GIO dataprovider
