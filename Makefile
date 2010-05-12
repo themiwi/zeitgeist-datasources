@@ -1,3 +1,5 @@
+#missing: firefox, tomnboy
+
 DATAPROVIDERS = \
 	bzr \
 	eog \
@@ -5,6 +7,7 @@ DATAPROVIDERS = \
 	firefox-libzg \
 	gedit \
 	rhythmbox \
+	totem
 
 
 define do-recursive
