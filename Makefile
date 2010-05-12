@@ -6,6 +6,7 @@ DATAPROVIDERS = \
 	epiphany \
 	firefox-libzg \
 	firefox \
+	geany \
 	gedit \
 	rhythmbox \
 	totem
