@@ -1,8 +1,9 @@
 DATAPROVIDERS = \
-	firefox-libzg \
 	bzr \
 	eog \
-	epiphany
+	epiphany \
+	firefox-libzg \
+	gedit \
 
 
 define do-recursive
