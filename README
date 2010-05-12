@@ -10,7 +10,11 @@ Collection of Dataprovider for Zeitgeist
 Installation
 ============
 
-Various Make targets:
+To install all dataprovider for the current user run
+
+	make && make local-install
+
+There are also various other make targets:
 	make
 	make install
 	make uninstall
