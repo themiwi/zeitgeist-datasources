@@ -15,7 +15,5 @@ comp:
 clean:
 	$(MAKE) --directory=components clean
 
-build: 
-	$(MAKE) comp
+build: comp
 	zip -r ../ZeitgeistDataprovider.xpi $(EXTENSION_CONTENT)
-	
