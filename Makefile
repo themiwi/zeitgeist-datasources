@@ -1,6 +1,6 @@
 DATAPROVIDERS = \
 	firefox-libzg \
-#	firefox
+	bzr \
 
 
 define do-recursive
@@ -25,11 +25,9 @@ local-uninstall:
 	@$(call do-recursive,$@)
 
 clean:
-	-rm -rf build
 	@$(call do-recursive,$@)
 
 
 .PHONY: clean build
 build:
-	mkdir build
 	@$(call do-recursive,$@)
