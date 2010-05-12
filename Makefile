@@ -4,6 +4,7 @@ DATAPROVIDERS = \
 	epiphany \
 	firefox-libzg \
 	gedit \
+	rhythmbox \
 
 
 define do-recursive
