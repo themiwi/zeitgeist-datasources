@@ -25,6 +25,6 @@
 [scriptable, uuid(d879c08c-517d-44f0-83e1-3ef75a527ddf)]
 interface zeitgeist : nsISupports
 {
-	void		insert(in string url, in AUTF8String title);
+	void		insert(in string url, in string mimetype, in AUTF8String title);
 };
 

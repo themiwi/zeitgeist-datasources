@@ -47,15 +47,20 @@ zeitgeistextend::~zeitgeistextend()
 	g_debug("destructor of zeitgeistextend");
 }
 
-NS_IMETHODIMP zeitgeistextend::Insert(const char *url, const nsACString &title)
+NS_IMETHODIMP zeitgeistextend::Insert(const char *url,
+                                      const char *mimetype,
+                                      const nsACString &title_str)
 {
 	ZeitgeistEvent		*event;
-	gchar				*title_char;
+	gchar				*title = NULL;
 
 	g_debug("zeitgeist start - creating event");
-	
-	gsize title_len = title.EndReading () - title.BeginReading ();
-	title_char = g_strndup (title.BeginReading (), title_len);
+
+	if (!title_str.IsEmpty ())
+	{
+		gsize title_len = title_str.EndReading () - title_str.BeginReading ();
+		title = g_strndup (title_str.BeginReading (), title_len);
+	}
 
 	event = zeitgeist_event_new_full (
 			ZEITGEIST_ZG_ACCESS_EVENT,
@@ -65,13 +70,13 @@ NS_IMETHODIMP zeitgeistextend::Insert(const char *url, const nsACString &title)
 				url,
 				ZEITGEIST_NFO_WEBSITE,
 				ZEITGEIST_NFO_REMOTE_DATA_OBJECT,
-				"text/html",
+				mimetype,
 				url,
-				title_char,
+				title,
 				"net"),
 	NULL);
 
-	g_free (title_char);
+	if (title) g_free (title);
 	g_debug("inserting event");
 	zeitgeist_log_insert_events_no_reply(log, event, NULL);
 	g_debug("zeitgeist end");

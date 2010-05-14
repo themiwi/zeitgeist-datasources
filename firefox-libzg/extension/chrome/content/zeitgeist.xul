@@ -71,6 +71,13 @@
 			return false;
 		};
 
+		debug = function (aMessage) {
+			var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+				.getService(Components.interfaces.nsIConsoleService);
+			consoleService.logStringMessage("Zeitgeist Extension: " + aMessage);
+		}
+
+
 		try {
 			if(zeitgeistgluexpcominterface == null) {
 				netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
@@ -86,9 +93,11 @@
 			onStateChange: function(aBrowser, aProgress, aRequest, aStateFlags) {
 				if (aStateFlags & Components.interfaces.nsIWebProgressListener.STATE_STOP) {
 					var uri = aBrowser.currentURI.spec;
+					var mimetype = aBrowser.contentDocument.contentType;
 					if (aRequest.name == uri && !ignore_uri(uri)) {
 						zeitgeistgluexpcominterface.insert(
 							uri,
+							mimetype,
 							aBrowser.contentTitle
 						);
 					}
