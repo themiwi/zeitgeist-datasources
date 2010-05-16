@@ -23,5 +23,6 @@
     <em:description>dataprovider for the zeitgeist framework, using xpcom and libzeitgeist</em:description>
     <em:creator>Markus Korn</em:creator>
     <em:homepageURL>http://launchpad.net/zeitgeist</em:homepageURL>
+    <em:iconURL>chrome://zeitgeist/content/zeitgeist.png</em:iconURL>
   </Description>      
 </RDF>
