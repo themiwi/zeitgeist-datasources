@@ -4,6 +4,16 @@
 	<script type="application/x-javascript"><![CDATA[
 		var zeitgeistgluexpcominterface = null;
 
+		var enable_googlemail = false;
+		var googlemail_view_regex = new RegExp("mail\\.google\\.com");
+
+		var debug = function (aMessage) {
+			var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+				.getService(Components.interfaces.nsIConsoleService);
+			consoleService.logStringMessage("Zeitgeist Extension: " + aMessage);
+			window.dump("Zeitgeist Extension:" + aMessage + "\n");
+		}
+
 		var make_pattern = function(pattern) {
 			for (item in pattern) {
 				// alert(pattern[item]);
@@ -45,6 +55,10 @@
 							// alert(pattern);
 							ignored_uris = make_pattern(pattern);
 							break;
+						case "enable_googlemail":
+							enable_googlemail = this.get_bool(aData);
+							//alert("changed gmail to"+enable_googlemail);
+							break
 					}
 			},
 			get_string: function(key) {
@@ -55,11 +69,22 @@
 					// ignoring this error
 					//alert(key + " : " + err);
 				};
+			},
+			get_bool: function(key) {
+				try {
+					return this._branch.getBoolPref(key);
+				} catch(err) {
+					// this means there is no such config value
+					// ignoring this error
+					//alert(key + " : " + err);
+				};
 			}
 		}
 		ZeitgeistPrefObserver.register();
 		ignored_uris = make_pattern(ZeitgeistPrefObserver.get_string("ignored_uris"));
-		// alert("IGNORE" + ignored_uris);
+		debug("We are ignoring this uris: " + ignored_uris);
+		var enable_googlemail = ZeitgeistPrefObserver.get_bool("enable_googlemail");
+		debug("the googlemail handler extension is activated? ["+enable_googlemail+"]");
 
 		ignore_uri = function(uri) {
 			for (pattern in ignored_uris) {
@@ -70,13 +95,6 @@
 			};
 			return false;
 		};
-
-		debug = function (aMessage) {
-			var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
-				.getService(Components.interfaces.nsIConsoleService);
-			consoleService.logStringMessage("Zeitgeist Extension: " + aMessage);
-		}
-
 
 		try {
 			if(zeitgeistgluexpcominterface == null) {
@@ -100,6 +118,21 @@
 							mimetype,
 							aBrowser.contentTitle
 						);
+						//alert("THATS WHAT WE HAVE "+enable_googlemail+" | "+uri+" | "+(enable_googlemail & googlemail_view_regex.test(uri)));
+						if (enable_googlemail & googlemail_view_regex.test(uri)) {
+							debug("let's begin the google fun'");
+							var dmt = aBrowser.contentDocument;
+							var head = dmt.getElementsByTagName("title")[0];
+							head.addEventListener("DOMSubtreeModified", function(event){
+								if (dmt.title) {
+									zeitgeistgluexpcominterface.insert(
+										dmt.location.href,
+										dmt.contentType,
+										dmt.title
+									);
+								};
+							}, false);
+						}
 					}
 				}
 			},
