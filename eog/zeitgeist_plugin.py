@@ -36,6 +36,8 @@ class ZeitgeistPlugin(eog.Plugin):
         eog.Plugin.__init__(self)
         self.__current_image = dict()
         self.__run = True
+        self.last_image = None
+        self.last_origin = None
 
     def activate(self, window):
         if CLIENT is not None:
@@ -48,24 +50,67 @@ class ZeitgeistPlugin(eog.Plugin):
     
     def get_image(self, window):
         image = window.get_image()
+
         if image and image is not self.__current_image.get(window, None):
             self.__current_image[window] = image
             file_obj = image.get_file()
-            subject = Subject.new_for_values(
-                uri=file_obj.get_uri(),
-                interpretation=unicode(Interpretation.IMAGE),
-                manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
-                origin=file_obj.get_parent().get_uri(),
-                #~ mimetype="", #TBD                
-            )            
-            event = Event.new_for_values(
-                timestamp=int(time.time()*1000),
-                interpretation=unicode(Interpretation.ACCESS_EVENT),
-                manifestation=unicode(Manifestation.USER_ACTIVITY),
-                actor="application://eog.desktop",
-                subjects=[subject,]
-            )
-            CLIENT.insert_event(event)
+            
+            if file_obj.get_uri == self.last_image:
+		    subject = Subject.new_for_values(
+		        uri=file_obj.get_uri(),
+		        interpretation=unicode(Interpretation.IMAGE),
+		        manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
+		        origin=file_obj.get_parent().get_uri(),
+		        text = file_obj.get_uri().split("/")[-1]
+		        #~ mimetype="", #TBD                
+		    )            
+		    event = Event.new_for_values(
+		        timestamp=int(time.time()*1000),
+		        interpretation=unicode(Interpretation.MODIFY_EVENT),
+		        manifestation=unicode(Manifestation.USER_ACTIVITY),
+		        actor="application://eog.desktop",
+		        subjects=[subject,]
+		    )
+		    CLIENT.insert_event(event)
+	    else:
+		if  self.last_image:
+			subject = Subject.new_for_values(
+				uri= self.last_image,
+				interpretation=unicode(Interpretation.IMAGE),
+				manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
+				origin=file_obj.get_parent().get_uri(),
+				text = self.last_image.split("/")[-1]
+				#~ mimetype="", #TBD                
+			    )            
+			event = Event.new_for_values(
+				timestamp=int(time.time()*1000),
+				interpretation=unicode(Interpretation.LEAVE_EVENT),
+				manifestation=unicode(Manifestation.USER_ACTIVITY),
+				actor="application://eog.desktop",
+				subjects=[subject,]
+			    )
+			CLIENT.insert_event(event)
+		        print "LEAVE", self.last_image
+	    subject = Subject.new_for_values(
+		uri=file_obj.get_uri(),
+		interpretation=unicode(Interpretation.IMAGE),
+		manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
+		origin=file_obj.get_parent().get_uri(),
+		text = file_obj.get_uri().split("/")[-1]
+		#~ mimetype="", #TBD                
+	    )            
+	    event = Event.new_for_values(
+		timestamp=int(time.time()*1000),
+		interpretation=unicode(Interpretation.ACCESS_EVENT),
+		manifestation=unicode(Manifestation.USER_ACTIVITY),
+		actor="application://eog.desktop",
+		subjects=[subject,]
+	    )
+	    CLIENT.insert_event(event)
+	    self.last_image = file_obj.get_uri()
+	    self.last_origin = file_obj.get_parent().get_uri()
+	    print "ACCESS", self.last_image
+
         return self.__run
         
     def deactivate(self, window, *args):
