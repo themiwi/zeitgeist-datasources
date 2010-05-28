@@ -65,7 +65,7 @@ NS_IMETHODIMP zeitgeistextend::Insert(const char *url,
 	event = zeitgeist_event_new_full (
 			ZEITGEIST_ZG_ACCESS_EVENT,
 			ZEITGEIST_ZG_USER_ACTIVITY,
-			"app://firefox.desktop",
+			"application://firefox.desktop",
 			zeitgeist_subject_new_full (
 				url,
 				ZEITGEIST_NFO_WEBSITE,

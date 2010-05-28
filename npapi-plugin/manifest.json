@@ -1,0 +1,13 @@
+{
+  "name": "Zeitgeist Plugin",
+  "description": "Sends events to Zeitgeist about sites you visit",
+  "version": "1",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs", "http://*/*"
+  ],
+  "plugins": [
+    { "path": "plugin/libzeitgeist-npapi-plugin.so" }
+  ],
+  "default_locale": "en"
+}
