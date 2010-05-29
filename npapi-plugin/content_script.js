@@ -26,7 +26,7 @@ if (updateContentType()) {
 	chrome.extension.sendRequest({name: "zgPlugin"}, dict);
 } else {
 	// send extra request to get the mime type
-	var = request = new XMLHttpRequest();
+	var request = new XMLHttpRequest();
 	request.open("HEAD", document.URL, true);
 	request.onreadystatechange=function() {
 		if (request.readyState==4) {
