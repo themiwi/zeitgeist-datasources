@@ -1,9 +1,4 @@
-var dict = {
-	"url": document.URL,
-	"title": document.title
-};
-
-function updateContentType() {
+function zgGetContentTypeFromHeader() {
 	var nodes = document.getElementsByTagName("meta");
 	for (var i=0; i<nodes.length; i++)
 	{
@@ -14,26 +9,41 @@ function updateContentType() {
 		{
 			var content_type = node.getAttribute("content");
 			if (!content_type) continue;
-			content_type = content_type.split(';')[0];
-			dict["mimeType"] = content_type;
-			return true;
+			return content_type.split(';')[0];
 		}
 	}
-	return false;
+	return null;
 }
 
-if (updateContentType()) {
-	chrome.extension.sendRequest({name: "zgPlugin"}, dict);
-} else {
-	// send extra request to get the mime type
-	var request = new XMLHttpRequest();
-	request.open("HEAD", document.URL, true);
-	request.onreadystatechange=function() {
-		if (request.readyState==4) {
-			var content = request.getResponseHeader("Content-Type");
-			dict["mimeType"] = content;
-			chrome.extension.sendRequest({name: "zgPlugin"}, dict);
+function zgGetDocumentInfo () {
+	var docInfo = {
+		"url": document.URL,
+		"title": document.title
+	};
+
+	var contentType = zgGetContentTypeFromHeader();
+	if (contentType) {
+		docInfo["mimeType"] = contentType;
+		chrome.extension.sendRequest({name: "zgPlugin"}, docInfo);
+	} else {
+		// send extra request to get the mime type
+		var request = new XMLHttpRequest();
+		request.open("HEAD", document.URL, true);
+		request.onreadystatechange=function() {
+			if (request.readyState==4) {
+				var content = request.getResponseHeader("Content-Type");
+				if (!content) return;
+				docInfo["mimeType"] = content;
+				chrome.extension.sendRequest({name: "zgPlugin"}, docInfo);
+			}
 		}
+		request.send(null);
 	}
-	request.send(null);
+}
+
+if (document.readyState == "loading") {
+	// seems like it never gets here...
+	window.addEventListener("onload", zgGetDocumentInfo, false);
+} else {
+	zgGetDocumentInfo();
 }

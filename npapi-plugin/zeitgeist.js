@@ -1,6 +1,7 @@
 var plugin = document.embeds[0];
 
 function onTabCreated (tab) {
+	chrome.tabs.executeScript(tab.id, {file: "content_script.js"});
 }
 
 function onTabRemoved (tabid) {
@@ -8,16 +9,8 @@ function onTabRemoved (tabid) {
 }
 
 function onTabUpdated (tabid, changeInfo, tab) {
-	if (changeInfo.status == "complete") {
-		/* FIXME:
-		 *   What is this good for when it can't give us more info 
-		 *   than what we already have here in 'tab'?
-		 *
-		 * At least we can try to use it to get rid of multiple events
-		 * for just one webpage...
-		 */
-		chrome.tabs.executeScript(tabid, {file: "content_script.js"});
-	}
+	if (!changeInfo.url) return;
+	chrome.tabs.executeScript(tabid, {file: "content_script.js"});
 }
 
 function onExtensionConnect (port) {
@@ -33,9 +26,14 @@ function onExtensionConnect (port) {
 	);
 }
 
+plugin.setActor("application://google-chrome.desktop");
+
+chrome.extension.onConnect.addListener (onExtensionConnect);
 chrome.tabs.onUpdated.addListener (onTabUpdated);
 chrome.tabs.onCreated.addListener (onTabCreated);
 chrome.tabs.onRemoved.addListener (onTabRemoved);
-chrome.extension.onConnect.addListener (onExtensionConnect);
 
-plugin.setActor("application://google-chrome.desktop");
+chrome.tabs.getAllInWindow(null, function (tabs) {
+	for (var i=0; i<tabs.length; i++)
+		chrome.tabs.executeScript(tabs[i].id, {file: "content_script.js"});
+});
