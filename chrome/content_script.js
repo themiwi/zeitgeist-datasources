@@ -41,9 +41,28 @@ function zgGetDocumentInfo () {
 	}
 }
 
-if (document.readyState == "loading") {
-	// seems like it never gets here...
-	window.addEventListener("onload", zgGetDocumentInfo, false);
+/*
+function zgReadyStateChanged () {
+	console.log("ready state change fired! " + document.readyState);
+	if (document.readyState == "complete") {
+		zgGetDocumentInfo();
+		document.removeEventListener("readystatechange", zgReadyStateChanged, false);
+	}
+}*/
+
+function zgTimeoutElapsed () {
+	if (document.readyState == "complete") {
+		zgGetDocumentInfo();
+	} else {
+		window.setTimeout(zgTimeoutElapsed, 1000);
+	}
+}
+
+if (document.readyState != "complete") {
+	// in a perfect world this would work
+	//document.addEventListener("readystatechange", zgReadyStateChanged, false);
+	// in real world we have to be nasty
+	window.setTimeout(zgTimeoutElapsed, 1000);
 } else {
 	zgGetDocumentInfo();
 }
