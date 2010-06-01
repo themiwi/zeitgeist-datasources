@@ -58,17 +58,18 @@ hasMethod(NPObject* obj, NPIdentifier methodName) {
 static bool
 invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
-  /* args should be: url, mimetype, title */
-  const NPString *url, *mimetype, *title;
+  /* args should be: url, origin, mimetype, title, [interpretation] */
+  const char *url, *origin, *mimetype, *title;
+  const char *interpretation = NULL;
   ZeitgeistEvent *event;
 
-  if(argCount != 3)
+  if(argCount != 4 && argCount != 5)
   {
     npnfuncs->setexception(obj, "exception during invocation");
     return false;
   }
 
-  for (int i=0; i<3; i++)
+  for (int i=0; i<argCount; i++)
   {
     if (!NPVARIANT_IS_STRING (args[i]))
     {
@@ -79,26 +80,37 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
   }
 
 
-  url = &NPVARIANT_TO_STRING (args[0]);
-  mimetype = &NPVARIANT_TO_STRING (args[1]);
-  title = &NPVARIANT_TO_STRING (args[2]);
+  url = NPVARIANT_TO_STRING (args[0]).UTF8Characters;
+  origin = NPVARIANT_TO_STRING (args[1]).UTF8Characters;
+  mimetype = NPVARIANT_TO_STRING (args[2]).UTF8Characters;
+  title = NPVARIANT_TO_STRING (args[3]).UTF8Characters;
+  if (argCount > 4)
+  {
+    interpretation = NPVARIANT_TO_STRING (args[4]).UTF8Characters;
+  }
+  else
+  {
+    interpretation = ZEITGEIST_NFO_WEBSITE;
+  }
   
-  g_debug ("URL: %s, mimeType: %s, title: %s",
-           url->UTF8Characters,
-           mimetype->UTF8Characters,
-           title->UTF8Characters);
+  g_debug ("URL: %s, origin: %s, mimeType: %s, title: %s, interpretation: %s",
+           url,
+           origin,
+           mimetype,
+           title,
+           interpretation);
 
   event = zeitgeist_event_new_full (
       ZEITGEIST_ZG_ACCESS_EVENT,
       ZEITGEIST_ZG_USER_ACTIVITY,
       actor ? actor : "application://google-chrome.desktop",
       zeitgeist_subject_new_full (
-        url->UTF8Characters,
-        ZEITGEIST_NFO_WEBSITE,
+        url,
+        interpretation,
         ZEITGEIST_NFO_REMOTE_DATA_OBJECT,
-        mimetype->UTF8Characters,
-        url->UTF8Characters,
-        title->UTF8Characters,
+        mimetype,
+        origin,
+        title,
         "net"),
   NULL);
 
@@ -158,13 +170,43 @@ invoke(NPObject* obj, NPIdentifier methodName, const NPVariant *args, uint32_t a
 
 static bool
 hasProperty(NPObject *obj, NPIdentifier propertyName) {
+  char *name;
+
   g_debug("np-zeitgeist: %s", __func__);
+
+  name = npnfuncs->utf8fromidentifier(propertyName);
+
+  if (name)
+  {
+    if (!strcmp(name, "BOOKMARK")) return true;
+    if (!strcmp(name, "WEBSITE")) return true;
+  }
   return false;
 }
 
 static bool
 getProperty(NPObject *obj, NPIdentifier propertyName, NPVariant *result) {
+  char *name;
+
   g_debug("np-zeitgeist: %s", __func__);
+
+  name = npnfuncs->utf8fromidentifier(propertyName);
+
+  if (name)
+  {
+    #define INSTALL_CONSTANT(pName, pValue) \
+      if (!strcmp(name, pName)) \
+      { \
+        size_t str_len = strlen(pValue);\
+        char *res_string = (char*)(npnfuncs->memalloc((uint32)(str_len + 1)));\
+        strcpy(res_string, pValue);\
+        STRINGN_TO_NPVARIANT(res_string, (uint32)str_len, *result); \
+        return true; \
+      }
+    INSTALL_CONSTANT("BOOKMARK", ZEITGEIST_NFO_BOOKMARK);
+    INSTALL_CONSTANT("WEBSITE", ZEITGEIST_NFO_WEBSITE);
+  }
+
   return false;
 }
 

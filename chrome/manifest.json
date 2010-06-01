@@ -4,7 +4,7 @@
   "version": "1",
   "background_page": "background.html",
   "permissions": [
-    "tabs", "http://*/*", "https://*/*"
+    "bookmarks", "tabs", "http://*/*", "https://*/*"
   ],
   "plugins": [
     { "path": "plugin/libzeitgeist-npapi-plugin.so" }

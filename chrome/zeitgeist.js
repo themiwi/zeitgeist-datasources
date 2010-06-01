@@ -13,13 +13,23 @@ function onTabUpdated (tabid, changeInfo, tab) {
 	chrome.tabs.executeScript(tabid, {file: "content_script.js"});
 }
 
+function onBookmarkCreated (bookmarkid, bookmark) {
+	if (!bookmark.url) return; // bookmark folder
+	var url = bookmark.url;
+	var title = bookmark.title;
+	var mimetype = "text/html"; // FIXME: really? use XHR to get it?
+	plugin.insertEvent(url, url, mimetype, title, plugin.BOOKMARK);
+}
+
 function onExtensionConnect (port) {
 	port.onMessage.addListener(
 		function(message) {
 			var url = message.url;
+			var origin = message.origin;
 			var mimetype = message.mimeType;
 			var title = message.title;
 			plugin.insertEvent(url,
+			                   origin ? origin : url,
 			                   mimetype ? mimetype : "text/html",
 			                   title);
 		}
@@ -29,6 +39,7 @@ function onExtensionConnect (port) {
 plugin.setActor("application://google-chrome.desktop");
 
 chrome.extension.onConnect.addListener (onExtensionConnect);
+chrome.bookmarks.onCreated.addListener (onBookmarkCreated);
 chrome.tabs.onUpdated.addListener (onTabUpdated);
 chrome.tabs.onCreated.addListener (onTabCreated);
 chrome.tabs.onRemoved.addListener (onTabRemoved);

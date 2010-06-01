@@ -18,8 +18,14 @@ function zgGetContentTypeFromHeader() {
 function zgGetDocumentInfo () {
 	var docInfo = {
 		"url": document.URL,
+		"origin": document.referrer,
 		"title": document.title
 	};
+
+	// FIXME: do we want the referrer, or just use domain?
+	if (!document.referrer && document.domain) {
+		docInfo["origin"] = document.location.protocol + "//" + document.domain;
+	}
 
 	var contentType = zgGetContentTypeFromHeader();
 	if (contentType) {
@@ -33,7 +39,7 @@ function zgGetDocumentInfo () {
 			if (request.readyState==4) {
 				var content = request.getResponseHeader("Content-Type");
 				if (!content) return;
-				docInfo["mimeType"] = content;
+				docInfo["mimeType"] = content.split(';')[0];
 				chrome.extension.sendRequest({name: "zgPlugin"}, docInfo);
 			}
 		}
