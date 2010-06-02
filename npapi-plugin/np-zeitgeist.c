@@ -46,9 +46,9 @@ static char            *actor    = NULL;
 static bool
 hasMethod(NPObject* obj, NPIdentifier methodName) {
   char *name;
-  g_debug("np-zeitgeist: %s", __func__);
 
   name = npnfuncs->utf8fromidentifier(methodName);
+
   if (!strcmp(name, "insertEvent")) return true;
   else if (!strcmp(name, "setActor")) return true;
 
@@ -75,7 +75,7 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
     if (!NPVARIANT_IS_STRING (args[i]))
     {
       npnfuncs->setexception(obj, "string argument expected");
-      g_debug ("argument #%d is not string", i);
+      g_debug ("argument #%d must be string", i);
       return false;
     }
   }
@@ -129,7 +129,7 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
 static bool
 invokeSetActor (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
-  const NPString *actorName;
+  const char *actorName;
 
   if(argCount != 1 || !NPVARIANT_IS_STRING (args[0]))
   {
@@ -137,11 +137,14 @@ invokeSetActor (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVaria
     return false;
   }
 
-  actorName = &NPVARIANT_TO_STRING (args[0]);
+  actorName = NPVARIANT_TO_STRING (args[0]).UTF8Characters;
+  g_debug ("setting actor to: \"%s\"", actorName);
   
-  g_debug ("setting actor to: \"%s\"",
-           actorName->UTF8Characters);
-  actor = g_strdup(actorName->UTF8Characters);
+  if (actor)
+  {
+    g_free(actor);
+  }
+  actor = g_strdup (actorName);
 
   VOID_TO_NPVARIANT (*result);
   
@@ -152,15 +155,12 @@ static bool
 invoke(NPObject* obj, NPIdentifier methodName, const NPVariant *args, uint32_t argCount, NPVariant *result) {
   char *name;
 
-  g_debug("np-zeitgeist: %s", __func__);
-
   name = npnfuncs->utf8fromidentifier(methodName);
 
   if(name)
   {
     if (!strcmp (name, "insertEvent"))
     {
-      g_debug("np-zeitgeist: invoke insertEvent");
       return invokeInsertEvent(obj, args, argCount, result);
     }
     else if (!strcmp (name, "setActor"))
@@ -176,8 +176,6 @@ invoke(NPObject* obj, NPIdentifier methodName, const NPVariant *args, uint32_t a
 static bool
 hasProperty(NPObject *obj, NPIdentifier propertyName) {
   char *name;
-
-  g_debug("np-zeitgeist: %s", __func__);
 
   name = npnfuncs->utf8fromidentifier(propertyName);
 
@@ -199,8 +197,6 @@ hasProperty(NPObject *obj, NPIdentifier propertyName) {
 static bool
 getProperty(NPObject *obj, NPIdentifier propertyName, NPVariant *result) {
   char *name;
-
-  g_debug("np-zeitgeist: %s", __func__);
 
   name = npnfuncs->utf8fromidentifier(propertyName);
 
