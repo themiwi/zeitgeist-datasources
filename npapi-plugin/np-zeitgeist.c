@@ -61,6 +61,7 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
   /* args should be: url, origin, mimetype, title, [interpretation] */
   const char *url, *origin, *mimetype, *title;
   const char *interpretation = NULL;
+  const char *manifestation = NULL;
   ZeitgeistEvent *event;
 
   if(argCount != 4 && argCount != 5)
@@ -92,7 +93,11 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
   {
     interpretation = ZEITGEIST_NFO_WEBSITE;
   }
-  
+
+  // determine manifestation from url
+  manifestation = zeitgeist_manifestation_for_uri (url);
+  if (!manifestation) manifestation = ZEITGEIST_NFO_REMOTE_DATA_OBJECT;
+
   g_debug ("URL: %s, origin: %s, mimeType: %s, title: %s, interpretation: %s",
            url,
            origin,
@@ -107,7 +112,7 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
       zeitgeist_subject_new_full (
         url,
         interpretation,
-        ZEITGEIST_NFO_REMOTE_DATA_OBJECT,
+        manifestation,
         mimetype,
         origin,
         title,
@@ -178,7 +183,14 @@ hasProperty(NPObject *obj, NPIdentifier propertyName) {
 
   if (name)
   {
+    if (!strcmp(name, "APPLICATION")) return true;
+    if (!strcmp(name, "ARCHIVE")) return true;
+    if (!strcmp(name, "AUDIO")) return true;
     if (!strcmp(name, "BOOKMARK")) return true;
+    if (!strcmp(name, "DOCUMENT")) return true;
+    if (!strcmp(name, "IMAGE")) return true;
+    if (!strcmp(name, "MESSAGE")) return true;
+    if (!strcmp(name, "VIDEO")) return true;
     if (!strcmp(name, "WEBSITE")) return true;
   }
   return false;
@@ -192,6 +204,7 @@ getProperty(NPObject *obj, NPIdentifier propertyName, NPVariant *result) {
 
   name = npnfuncs->utf8fromidentifier(propertyName);
 
+  // FIXME: move all of this into separate Interpretation object?
   if (name)
   {
     #define INSTALL_CONSTANT(pName, pValue) \
@@ -203,7 +216,14 @@ getProperty(NPObject *obj, NPIdentifier propertyName, NPVariant *result) {
         STRINGN_TO_NPVARIANT(res_string, (uint32)str_len, *result); \
         return true; \
       }
+    INSTALL_CONSTANT("APPLICATION", ZEITGEIST_NFO_APPLICATION);
+    INSTALL_CONSTANT("ARCHIVE", ZEITGEIST_NFO_ARCHIVE);
+    INSTALL_CONSTANT("AUDIO", ZEITGEIST_NFO_AUDIO);
     INSTALL_CONSTANT("BOOKMARK", ZEITGEIST_NFO_BOOKMARK);
+    INSTALL_CONSTANT("DOCUMENT", ZEITGEIST_NFO_DOCUMENT);
+    INSTALL_CONSTANT("IMAGE", ZEITGEIST_NFO_IMAGE);
+    INSTALL_CONSTANT("MESSAGE", ZEITGEIST_NMO_MESSAGE);
+    INSTALL_CONSTANT("VIDEO", ZEITGEIST_NFO_VIDEO);
     INSTALL_CONSTANT("WEBSITE", ZEITGEIST_NFO_WEBSITE);
   }
 
