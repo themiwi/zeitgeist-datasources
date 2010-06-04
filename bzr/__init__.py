@@ -60,9 +60,9 @@ def post_commit(local, master, old_revno, old_revid, new_revno, new_revid):
         uri=unicode(master.base),
         interpretation=unicode(Interpretation.SOURCE_CODE),
         manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
-        text=unicode(revision.message),
+        text=unicode(revision.message.rstrip()),
         origin=unicode(master.base),
-    )            
+    )
     event = Event.new_for_values(
         timestamp=int(time.time()*1000),
         interpretation=unicode(interpretation),
