@@ -29,6 +29,12 @@ fi
 AM_CONDITIONAL(ENABLE_VALA, test "x$with_vala" = "xyes")
 
 dnl ==============================================
+dnl Check commonly used packages
+dnl ==============================================
+
+PKG_CHECK_MODULES(ZEITGEIST, zeitgeist-1.0, [HAVE_LIBZG=yes], [HAVE_LIBZG=no])
+
+dnl ==============================================
 dnl Enable building only supported plugins
 dnl ==============================================
 AC_ARG_ENABLE([all-plugins],
@@ -66,51 +72,73 @@ for plugin in ${used_plugins}; do
 		bzr)
 		;;
 		chrome)
-			#PKG_CHECK_MODULES()
+			if test "${HAVE_LIBZG}" != "yes" ; then
+				plugin_error_or_ignore "libzeitgeist not found"
+				continue
+			fi
 		;;
 		eog)
 		;;
 		epiphany)
 			# not supported atm
-			add_plugin="0"
+			continue
 		;;
 		firefox-libzg)
+			if test "${HAVE_LIBZG}" != "yes" ; then
+				plugin_error_or_ignore "libzeitgeist not found"
+				continue
+			fi
 		;;
 		geany)
+			if test "${HAVE_LIBZG}" != "yes" ; then
+				plugin_error_or_ignore "libzeitgeist not found"
+				continue
+			fi
 			PKG_CHECK_MODULES(GEANY, geany,
 				[HAVE_GEANY=yes], [HAVE_GEANY=no])
 			if test "${HAVE_GEANY}" != "yes" ; then
 				plugin_error_or_ignore "geany not found"
-				add_plugin="0"
+				continue
 			fi
 		;;
 		gedit)
 		;;
 		npapi-plugin)
+			if test "${HAVE_LIBZG}" != "yes" ; then
+				plugin_error_or_ignore "libzeitgeist not found"
+				continue
+			fi
 		;;
 		rhythmbox)
 		;;
 		tomboy)
+			# not supported atm
+			continue
 		;;
 		totem-libzg)
 			if test "${with_vala}" != "yes" ; then
 				plugin_error_or_ignore "you need vala installed to use the ${plugin} plugin"
-				add_plugin="0"
-			else
-				PKG_CHECK_MODULES(TOTEM_PLPARSER, totem-plparser,
-					[HAVE_TOTEM_PLPARSER=yes], [HAVE_TOTEM_PLPARSER=no])
-				if test "${HAVE_TOTEM_PLPARSER}" != "yes" ; then
-					plugin_error_or_ignore "totem-plparser package not found"
-					add_plugin="0"
-				fi
+				continue
 			fi
+			if test "${HAVE_LIBZG}" != "yes" ; then
+				plugin_error_or_ignore "libzeitgeist not found"
+				continue
+			fi
+			PKG_CHECK_MODULES(TOTEM_PLPARSER, totem-plparser,
+				[HAVE_TOTEM_PLPARSER=yes], [HAVE_TOTEM_PLPARSER=no])
+			if test "${HAVE_TOTEM_PLPARSER}" != "yes" ; then
+				plugin_error_or_ignore "totem-plparser package not found"
+				continue
+			fi
+		;;
+		*)
+			plugin_error_or_ignore "${plugin} is not handled"
+			continue
 		;;
         esac
 
 	# Add the specified plugin
-	if test "${add_plugin}" = "1" ; then
-		used_plugins2="${used_plugins2} ${plugin}"
-	fi
+	used_plugins2="${used_plugins2} ${plugin}"
 done
 
 ALL_PLUGINS=$allowed_plugins
