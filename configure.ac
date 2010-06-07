@@ -4,6 +4,9 @@ AC_INIT([zeitgeist-dataproviders],
 
 AM_INIT_AUTOMAKE([1.9 foreign])
 
+# Enable silent build when available (Automake 1.11)
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+
 dnl pkg-config
 AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 if test "x$PKG_CONFIG" = "xno"; then
@@ -13,6 +16,7 @@ fi
 AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_LIBTOOL
 AC_STDC_HEADERS
 
 dnl ==============================================
@@ -33,6 +37,7 @@ dnl Check commonly used packages
 dnl ==============================================
 
 PKG_CHECK_MODULES(ZEITGEIST, zeitgeist-1.0, [HAVE_LIBZG=yes], [HAVE_LIBZG=no])
+PKG_CHECK_MODULES(GTK, gtk+-2.0, [HAVE_GTK=yes], [HAVE_GTK=no])
 
 dnl ==============================================
 dnl Enable building only supported plugins
@@ -44,8 +49,11 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_RESULT($all_plugins)
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog firefox-libzg geany gedit npapi-plugin rhythmbox totem-libzg"
-# currently disabled = "epiphany tomboy"
+allowed_plugins="bzr chrome eog geany gedit rhythmbox totem-libzg"
+# currently disabled = "epiphany firefox-libzg tomboy"
+
+# npapi-plugin has a template Makefile.am, but don't use it directly
+#   - see chrome's Makefile.am for how to compile it
 
 plugin_error_or_ignore()
 {
@@ -124,6 +132,10 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "libzeitgeist not found"
 				continue
 			fi
+			if test "${HAVE_GTK}" != "yes" ; then
+				plugin_error_or_ignore "gtk+-2.0 not found"
+				continue
+			fi
 			PKG_CHECK_MODULES(TOTEM_PLPARSER, totem-plparser,
 				[HAVE_TOTEM_PLPARSER=yes], [HAVE_TOTEM_PLPARSER=no])
 			if test "${HAVE_TOTEM_PLPARSER}" != "yes" ; then
@@ -156,7 +168,13 @@ AC_SUBST([AM_LDFLAGS])
 
 AC_OUTPUT([
 Makefile
+bzr/Makefile
 chrome/Makefile
+eog/Makefile
+geany/Makefile
+gedit/Makefile
+rhythmbox/Makefile
+totem-libzg/Makefile
 ])
 
 AC_MSG_NOTICE([Zeitgeist-dataproviders was configured with the following options:])
