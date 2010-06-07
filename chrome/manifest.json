@@ -9,5 +9,4 @@
   "plugins": [
     { "path": "plugin/libzeitgeist-npapi-plugin.so" }
   ],
-  "default_locale": "en"
 }
