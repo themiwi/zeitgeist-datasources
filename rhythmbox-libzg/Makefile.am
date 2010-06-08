@@ -15,7 +15,9 @@ libzeitgeist_recent_plugin_la_CFLAGS = \
 	-fPIC -Wall -std=c99 \
 	$(ZEITGEIST_CFLAGS) \
 	$(GTK_CFLAGS) \
+	$(LIBXML_CFLAGS) \
 	-I./headers \
+	-I./headers/shell \
 	$(NULL)
 	
 libzeitgeist_recent_plugin_la_LIBADD = \

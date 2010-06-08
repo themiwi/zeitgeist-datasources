@@ -144,6 +144,12 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "gtk+-2.0 not found"
 				continue
 			fi
+			PKG_CHECK_MODULES([LIBXML], [libxml-2.0],
+				[HAVE_LIBXML=yes], [HAVE_LIBXML=no])
+			if test "${HAVE_LIBXML}" != "yes" ; then
+				plugin_error_or_ignore "libxml package not found"
+				continue
+			fi
 		;;
 		tomboy)
 			# not supported atm
