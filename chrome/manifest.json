@@ -8,5 +8,5 @@
   ],
   "plugins": [
     { "path": "plugin/libzeitgeist-npapi-plugin.so" }
-  ],
+  ]
 }
