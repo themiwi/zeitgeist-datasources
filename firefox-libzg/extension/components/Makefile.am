@@ -1,0 +1,43 @@
+zeitgeistmoduledir = $(libdir)/xul-ext-zeitgeist
+zeitgeistmodule_LTLIBRARIES = libzeitgeist_xpcom.la
+
+libzeitgeist_xpcom_la_SOURCES = \
+	ZeitgeistComponent.cpp \
+	ZeitgeistModule.cpp \
+	$(NULL)
+
+libzeitgeist_xpcom_la_CXXFLAGS = \
+	-include "xpcom-config.h" \
+	$(ZEITGEIST_CFLAGS) \
+	$(LIBXUL_CFLAGS) \
+	$(NULL)
+
+libzeitgeist_xpcom_la_LIBADD = \
+	$(ZEITGEIST_LIBS) \
+	$(LIBXUL_LIBS) \
+	$(NULL)
+
+libzeitgeist_xpcom_la_LDFLAGS = \
+        -module -avoid-version \
+        $(NULL)
+
+BUILT_SOURCES = \
+	zeitgeist-library.h \
+	zeitgeist.h \
+	zeitgeist.xpt \
+	$(NULL)
+
+zeitgeist.h: zeitgeist.idl
+	$(AM_V_GEN)$(XPIDL_BIN) -m header -I $(XUL_IDLDIR) -o zeitgeist $<
+
+zeitgeist.xpt: zeitgeist.idl
+	$(AM_V_GEN)$(XPIDL_BIN) -m typelib -I $(XUL_IDLDIR) -o zeitgeist $<
+
+zeitgeist-library.h:
+	$(AM_V_GEN)$(LN_S) "`$(PKG_CONFIG) --variable includedir zeitgeist-1.0`/zeitgeist-1.0/zeitgeist.h" $@
+
+# small helper with local install
+local-install: all
+	cp .libs/libzeitgeist_xpcom.so ./
+
+local-uninstall: ;

@@ -1,6 +1,6 @@
 [RB Plugin]
 Loader=python
-Module=zeitgeist_plugin
+Module=zeitgeist-plugin
 IAge=1
 Name=Zeitgeist
 Description=Inform Zeitgeist about your activity

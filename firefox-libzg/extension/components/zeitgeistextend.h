@@ -24,7 +24,7 @@
 #define _ZEITGEISTEXTEND_H_
 
 #include "zeitgeist.h"
-#include <zeitgeist.h>
+#include "zeitgeist-library.h"
 
 #define ZEITGEIST_COMPONENT_CONTRACTID "@zeitgeist-project.com/DATAPROVIDER/firefox-xpcom;1"
 #define ZEITGEIST_COMPONENT_CLASSNAME "zeitgeist dataprovider for firefox"
