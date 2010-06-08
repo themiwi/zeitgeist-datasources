@@ -1,9 +1,0 @@
-[Totem Plugin]
-Loader=python
-Module=zeitgeist_plugin
-IAge=1
-Name=Zeitgeist
-Description=Inform Zeitgeist about your activities
-Authors=Seif Lotfy <seif@lotfy.com>
-Copyright=Copyright © 2007 Seif Lotfy 
-Website=http://www.gnome.org/projects/totem/
