@@ -68,17 +68,17 @@ class ZeitgeistLogic:
 		print "Zeitgeist: tab removed", doc.get_uri()
 		doc.disconnect_by_func(self.SaveDocHandler)
 		doc.disconnect_by_func(self.TabLoadedHandler)
-		self.SendToZeitgeist(doc, Interpretation.CLOSE_EVENT)
+		self.SendToZeitgeist(doc, Interpretation.LEAVE_EVENT)
 
 	def TabLoadedHandler(self, doc, data):
 		if not self.current_uri == doc.get_uri():
 			self.current_uri = doc.get_uri()
 			print "Zeitgeist: tab loaded document", doc.get_uri()
-			self.SendToZeitgeist(doc, Interpretation.OPEN_EVENT)
+			self.SendToZeitgeist(doc, Interpretation.ACCESS_EVENT)
 
 	def SaveDocHandler(self, doc, data):
 		print "Zeitgeist: saved document", doc.get_uri()
-		self.SendToZeitgeist(doc, Interpretation.SAVE_EVENT)
+		self.SendToZeitgeist(doc, Interpretation.MODIFY_EVENT)
 
 	def SendToZeitgeist(self, doc, event):
 		if doc.get_uri():
@@ -86,7 +86,7 @@ class ZeitgeistLogic:
 				uri=doc.get_uri(),
 				text=doc.get_short_name_for_display (),
 				interpretation=unicode(Interpretation.DOCUMENT),
-				manifestation=unicode(Manifestation.FILE),
+				manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
 				origin=doc.get_uri().rpartition("/")[0],
 				mimetype=doc.get_mime_type(), #TBD	
 			)

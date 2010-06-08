@@ -143,14 +143,14 @@ class Zeitgeist(totem.Plugin):
 			if not self.last_action == last_action:
 				self.last_action = last_action
 				print self.last_action
-				self.SendToZeitgeist(self.current_metadata, Interpretation.OPEN_EVENT)
+				self.SendToZeitgeist(self.current_metadata, Interpretation.ACCESS_EVENT)
 
 	def inform_closed(self):
 		last_action = ["CLOSED", self.current_metadata["uri"], self.current_metadata["title"], self.current_metadata["mimetype"]]
 		if not self.last_action == last_action:
 			self.last_action = last_action
 			print self.last_action
-			self.SendToZeitgeist(self.last_metadata, Interpretation.CLOSE_EVENT)
+			self.SendToZeitgeist(self.last_metadata, Interpretation.LEAVE_EVENT)
 
 	def SendToZeitgeist(self, doc, event):
 		#print doc["uri"]
@@ -160,7 +160,7 @@ class Zeitgeist(totem.Plugin):
 				uri=doc["uri"],
 				text=doc["title"],
 				interpretation=unicode(self.current_metadata["interpretation"]),
-				manifestation=unicode(Manifestation.FILE),
+				manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
 				origin=doc["uri"].rpartition("/")[0],
 				mimetype=doc["mimetype"], #TBD	
 			)
