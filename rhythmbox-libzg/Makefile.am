@@ -34,13 +34,13 @@ PLUGIN_FILES = \
 	zeitgeist-recent.rb-plugin \
 	./.libs/libzeitgeist-recent-plugin.so
 
-TOTEM_PLUGIN_HOME_DIR = ~/.local/share/totem/plugins/zeitgeist-recent
+RB_PLUGIN_HOME_DIR = ~/.local/share/rhythmbox/plugins/zeitgeist-recent
 
 local-install:
-	mkdir -p $(TOTEM_PLUGIN_HOME_DIR)
-	cp $(PLUGIN_FILES) $(TOTEM_PLUGIN_HOME_DIR)
+	mkdir -p $(RB_PLUGIN_HOME_DIR)
+	cp $(PLUGIN_FILES) $(RB_PLUGIN_HOME_DIR)
 
 local-uninstall:
-	echo Removing $(TOTEM_PLUGIN_HOME_DIR)
-	rm -rf $(TOTEM_PLUGIN_HOME_DIR)
+	echo Removing $(RB_PLUGIN_HOME_DIR)
+	rm -rf $(RB_PLUGIN_HOME_DIR)
 
