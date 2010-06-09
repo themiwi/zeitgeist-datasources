@@ -12,21 +12,60 @@ struct TimeInfo {
 
 class ZeitgeistPlaylistSource: RB.StaticPlaylistSource {
   private int days = 1;
+  private Zeitgeist.Log zg_log;
 
-  public ZeitgeistPlaylistSource (RB.Shell shell,
+  public ZeitgeistPlaylistSource (Zeitgeist.Log zg_log,
+                                  RB.Shell shell,
                                   TimeInfo ti,
                                   SourceGroup group,
                                   RhythmDB.EntryType entry_type) {
     GLib.Object (shell: shell,
                  name: ti.name,
                  source_group: group,
+                 is_local: false,
                  entry_type: entry_type);
 
-    days = ti.days;
+    this.days = ti.days;
+    this.zg_log = zg_log;
   }
 
   public void set_up () {
     debug ("set-up called");
+
+    this.set_query_model (new RhythmDB.QueryModel.empty (this.shell.db));
+
+    load_events ();
+  }
+
+  private async void load_events () {
+    var t = TimeVal ();
+    int64 now = Zeitgeist.timeval_to_timestamp (t);
+    t.tv_sec -= 60 * 60 * 24 * this.days;
+    int64 start = Zeitgeist.timeval_to_timestamp (t);
+
+    var event = new Zeitgeist.Event ();
+    var subject = new Zeitgeist.Subject ();
+    subject.set_interpretation (Zeitgeist.NFO_AUDIO);
+    event.add_subject (subject);
+
+    var templates = new PtrArray ();
+    templates.add (event);
+
+    var events = yield zg_log.find_events (new Zeitgeist.TimeRange (start, now),
+                                           (owned) templates,
+                                           Zeitgeist.StorageState.ANY, 0,
+                                           Zeitgeist.ResultType.MOST_RECENT_EVENTS,
+                                           null);
+
+    for (int i=0; i<events.len; i++) {
+      unowned Zeitgeist.Event e = (Zeitgeist.Event*) events.index (i);
+      if (e.num_subjects () <= 0) continue;
+      var s = e.get_subject (0);
+      unowned RhythmDB.Entry entry = 
+        RhythmDB.Entry.lookup_by_location (this.shell.db, s.get_uri ());
+      if (entry == null) continue;
+      this.query_model.add_entry (entry, -1);
+    }
   }
 }
 
@@ -50,7 +89,7 @@ class ZeitgeistRecentPlugin: RB.Plugin {
     foreach (unowned TimeInfo? ti in periods)
     {
       var source = new ZeitgeistPlaylistSource (
-        rb_shell, ti, zg_source_group, 
+        zg_log, rb_shell, ti, zg_source_group, 
         RhythmDB.Entry.register_type(rb_shell.db, "zgrp"));
       source.set_up ();
       rb_shell.append_source (source, null);
