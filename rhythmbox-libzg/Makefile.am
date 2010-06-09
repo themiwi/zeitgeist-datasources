@@ -36,7 +36,7 @@ PLUGIN_FILES = \
 
 RB_PLUGIN_HOME_DIR = ~/.local/share/rhythmbox/plugins/zeitgeist-recent
 
-local-install:
+local-install: all
 	mkdir -p $(RB_PLUGIN_HOME_DIR)
 	cp $(PLUGIN_FILES) $(RB_PLUGIN_HOME_DIR)
 

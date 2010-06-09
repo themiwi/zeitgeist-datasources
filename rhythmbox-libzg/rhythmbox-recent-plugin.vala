@@ -23,17 +23,15 @@ class ZeitgeistPlaylistSource: RB.StaticPlaylistSource {
                  name: ti.name,
                  source_group: group,
                  is_local: false,
-                 entry_type: entry_type);
+                 entry_type: entry_type,
+                 query_model: new RhythmDB.QueryModel.empty (shell.db));
 
     this.days = ti.days;
     this.zg_log = zg_log;
   }
 
   public void set_up () {
-    debug ("set-up called");
-
-    this.set_query_model (new RhythmDB.QueryModel.empty (this.shell.db));
-
+    // FIXME: move to constructor?! it's async anyway...
     load_events ();
   }
 
@@ -57,14 +55,13 @@ class ZeitgeistPlaylistSource: RB.StaticPlaylistSource {
                                            Zeitgeist.ResultType.MOST_RECENT_EVENTS,
                                            null);
 
+    debug ("Got %u events from zg", events.len);
     for (int i=0; i<events.len; i++) {
       unowned Zeitgeist.Event e = (Zeitgeist.Event*) events.index (i);
       if (e.num_subjects () <= 0) continue;
       var s = e.get_subject (0);
-      unowned RhythmDB.Entry entry = 
-        RhythmDB.Entry.lookup_by_location (this.shell.db, s.get_uri ());
-      if (entry == null) continue;
-      this.query_model.add_entry (entry, -1);
+
+      this.add_to_map (s.get_uri ());
     }
   }
 }
@@ -76,6 +73,7 @@ class ZeitgeistRecentPlugin: RB.Plugin {
   unowned SourceGroup zg_source_group = null;
 
   List<TimeInfo?> periods;
+  List<unowned RB.Source> sources;
 
   private void init_source_group () {
     if (zg_source_group != null) return;
@@ -86,13 +84,16 @@ class ZeitgeistRecentPlugin: RB.Plugin {
   }
 
   private void append_sources () {
-    foreach (unowned TimeInfo? ti in periods)
-    {
-      var source = new ZeitgeistPlaylistSource (
-        zg_log, rb_shell, ti, zg_source_group, 
-        RhythmDB.Entry.register_type(rb_shell.db, "zgrp"));
-      source.set_up ();
+    var db = rb_shell.db;
+    unowned RhythmDB.EntryType? entry_type;
+    entry_type = RhythmDB.EntryType.get_by_name (db, "song");
+    foreach (unowned TimeInfo? ti in periods) {
+      var source = new ZeitgeistPlaylistSource (zg_log, rb_shell, ti,
+                                                zg_source_group, entry_type);
       rb_shell.append_source (source, null);
+      source.set_up ();
+      
+      this.sources.append (source);
     }
   }
 
@@ -101,6 +102,7 @@ class ZeitgeistRecentPlugin: RB.Plugin {
     zg_log = new Zeitgeist.Log ();
     rb_shell = shell;
 
+    sources = new List<unowned RB.Source> ();
     periods = new List<TimeInfo?> ();
     periods.append (TimeInfo ("Today", 1));
     periods.append (TimeInfo ("Yesterday", 2));
@@ -114,6 +116,10 @@ class ZeitgeistRecentPlugin: RB.Plugin {
   }
 
   public override void deactivate (RB.Shell shell) {
+    foreach (unowned RB.Source src in sources) {
+      src.deleted ();
+    }
+    sources = null;
     rb_shell = null;
     zg_log = null;
     debug ("plugin de-activated");
