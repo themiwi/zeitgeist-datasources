@@ -3,8 +3,7 @@ using RB;
 struct TimeInfo {
   string name;
   int days;
-  TimeInfo (string name, int days)
-  {
+  TimeInfo (string name, int days) {
     this.name = name;
     this.days = days;
   }
@@ -36,10 +35,18 @@ class ZeitgeistPlaylistSource: RB.StaticPlaylistSource {
   }
 
   private async void load_events () {
+    int64 start, now;
     var t = TimeVal ();
-    int64 now = Zeitgeist.timeval_to_timestamp (t);
-    t.tv_sec -= 60 * 60 * 24 * this.days;
-    int64 start = Zeitgeist.timeval_to_timestamp (t);
+    now = Zeitgeist.timeval_to_timestamp (t);
+    if (this.days > 0)
+    {
+      t.tv_sec -= 60 * 60 * 24 * this.days;
+      start = Zeitgeist.timeval_to_timestamp (t);
+    }
+    else
+    {
+      start = 0;
+    }
 
     var event = new Zeitgeist.Event ();
     var subject = new Zeitgeist.Subject ();
@@ -49,15 +56,17 @@ class ZeitgeistPlaylistSource: RB.StaticPlaylistSource {
     var templates = new PtrArray ();
     templates.add (event);
 
-    var events = yield zg_log.find_events (new Zeitgeist.TimeRange (start, now),
-                                           (owned) templates,
-                                           Zeitgeist.StorageState.ANY, 0,
-                                           Zeitgeist.ResultType.MOST_RECENT_EVENTS,
-                                           null);
+    var events = 
+      yield zg_log.find_events (new Zeitgeist.TimeRange (start, now),
+                                (owned) templates,
+                                Zeitgeist.StorageState.ANY, 0,
+                                Zeitgeist.ResultType.MOST_POPULAR_SUBJECTS,
+                                null);
 
-    debug ("Got %u events from zg", events.len);
-    for (int i=0; i<events.len; i++) {
-      unowned Zeitgeist.Event e = (Zeitgeist.Event*) events.index (i);
+    debug ("Got %u events from zg", events.size ());
+    //foreach (unowned Zeitgeist.Event e in events) {
+    while (events.has_next ()) {
+      unowned Zeitgeist.Event e = events.next ();
       if (e.num_subjects () <= 0) continue;
       var s = e.get_subject (0);
 
@@ -66,7 +75,7 @@ class ZeitgeistPlaylistSource: RB.StaticPlaylistSource {
   }
 }
 
-class ZeitgeistRecentPlugin: RB.Plugin {
+class ZeitgeistPopularPlugin: RB.Plugin {
   private Zeitgeist.Log zg_log;
   private unowned RB.Shell rb_shell;
 
@@ -78,8 +87,8 @@ class ZeitgeistRecentPlugin: RB.Plugin {
   private void init_source_group () {
     if (zg_source_group != null) return;
 
-    zg_source_group = SourceGroup.register ("zg-recent",
-                                            "Zeitgeist",
+    zg_source_group = SourceGroup.register ("zg-popular",
+                                            "Most played",
                                             SourceGroupCategory.FIXED);
   }
 
@@ -98,7 +107,7 @@ class ZeitgeistRecentPlugin: RB.Plugin {
   }
 
   public override void activate (RB.Shell shell) {
-    debug ("plugin activated");
+    debug ("%s activated", this.get_type ().name ());
     zg_log = new Zeitgeist.Log ();
     rb_shell = shell;
 
@@ -106,10 +115,10 @@ class ZeitgeistRecentPlugin: RB.Plugin {
     periods = new List<TimeInfo?> ();
     periods.append (TimeInfo ("Today", 1));
     periods.append (TimeInfo ("Yesterday", 2));
-    periods.append (TimeInfo ("Last 3 days", 3));
-    periods.append (TimeInfo ("Last 7 days", 7));
-    periods.append (TimeInfo ("Last 14 days", 14));
-    periods.append (TimeInfo ("Last 90 days", 90));
+    periods.append (TimeInfo ("Last week", 7));
+    periods.append (TimeInfo ("Last month", 30));
+    periods.append (TimeInfo ("Last 3 months", 90));
+    periods.append (TimeInfo ("All time", 0));
 
     init_source_group ();
     append_sources ();
@@ -122,7 +131,7 @@ class ZeitgeistRecentPlugin: RB.Plugin {
     sources = null;
     rb_shell = null;
     zg_log = null;
-    debug ("plugin de-activated");
+    debug ("%s de-activated", this.get_type ().name ());
   }
 
 }
@@ -130,6 +139,6 @@ class ZeitgeistRecentPlugin: RB.Plugin {
 [ModuleInit]
 public GLib.Type register_rb_plugin (GLib.TypeModule module)
 {
-	return typeof (ZeitgeistRecentPlugin);
+	return typeof (ZeitgeistPopularPlugin);
 }
 

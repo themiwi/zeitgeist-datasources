@@ -1,6 +1,6 @@
-totemplugindir = $(libdir)/rhythmbox/plugins/zeitgeist-recent
-totemplugin_DATA = zeitgeist-recent.rb-plugin
-totemplugin_LTLIBRARIES = libzeitgeist-recent-plugin.la
+rhythmboxplugindir = $(libdir)/rhythmbox/plugins/zeitgeist-popular
+rhythmboxplugin_DATA = zeitgeist-popular.rb-plugin
+rhythmboxplugin_LTLIBRARIES = libzeitgeist-popular-plugin.la
 
 AM_VALAFLAGS = \
 	--pkg zeitgeist-1.0 \
@@ -9,9 +9,9 @@ AM_VALAFLAGS = \
 	--pkg rhythmdb \
 	$(NULL)
 
-libzeitgeist_recent_plugin_la_SOURCES = \
-	rhythmbox-recent-plugin.vala
-libzeitgeist_recent_plugin_la_CFLAGS = \
+libzeitgeist_popular_plugin_la_SOURCES = \
+	rhythmbox-popular-plugin.vala
+libzeitgeist_popular_plugin_la_CFLAGS = \
 	-fPIC -Wall -std=c99 \
 	$(ZEITGEIST_CFLAGS) \
 	$(GTK_CFLAGS) \
@@ -20,21 +20,21 @@ libzeitgeist_recent_plugin_la_CFLAGS = \
 	-I./headers/shell \
 	$(NULL)
 	
-libzeitgeist_recent_plugin_la_LIBADD = \
+libzeitgeist_popular_plugin_la_LIBADD = \
 	$(ZEITGEIST_LIBS) \
 	$(GTK_LIBS) \
 	$(NULL)
-libzeitgeist_recent_plugin_la_LDFLAGS = \
+libzeitgeist_popular_plugin_la_LDFLAGS = \
 	-module -avoid-version \
 	$(NULL)
 
 
 # we want to allow also local install
 PLUGIN_FILES = \
-	zeitgeist-recent.rb-plugin \
-	./.libs/libzeitgeist-recent-plugin.so
+	zeitgeist-popular.rb-plugin \
+	./.libs/libzeitgeist-popular-plugin.so
 
-RB_PLUGIN_HOME_DIR = ~/.local/share/rhythmbox/plugins/zeitgeist-recent
+RB_PLUGIN_HOME_DIR = ~/.local/share/rhythmbox/plugins/zeitgeist-popular
 
 local-install: all
 	mkdir -p $(RB_PLUGIN_HOME_DIR)

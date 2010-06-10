@@ -1,8 +1,0 @@
-[RB Plugin]
-Module=zeitgeist-recent-plugin
-IAge=1
-Name=Zeitgeist Recent
-Description=Show playlist populated by Zeitgeist
-Authors=Markus Korn <thekorn@gmx.de>
-Copyright=Copyright © 2010 Markus Korn
-Website=http://launchpad.net/~thekorn

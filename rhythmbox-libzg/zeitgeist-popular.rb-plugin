@@ -1,0 +1,8 @@
+[RB Plugin]
+Module=zeitgeist-popular-plugin
+IAge=1
+Name=Zeitgeist Popular
+Description=Show smart playlists populated by Zeitgeist
+Authors=Michal Hruby <michal.mhr@gmail.com>;Seif Lofty <s.lotfy@geekyogre.com>
+Copyright=Copyright © 2010 Seif Lofty, Michal Hruby
+Website=http://projects.gnome.org/rhythmbox
