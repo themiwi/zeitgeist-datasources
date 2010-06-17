@@ -74,7 +74,7 @@ class ZeitgeistPlugin: Totem.Plugin {
     current_media.mrl = mrl;
 
     TimeVal cur_time = TimeVal ();
-    current_media.timestamp = Zeitgeist.timeval_to_timestamp (cur_time);
+    current_media.timestamp = Zeitgeist.Timestamp.from_timeval (cur_time);
 
     // wait a bit for the media info
     if (media_info_timeout == 0) {
@@ -90,7 +90,7 @@ class ZeitgeistPlugin: Totem.Plugin {
     if (current_media.sent_access && current_media.mrl != null) {
       // send close event
       TimeVal cur_time = TimeVal ();
-      current_media.timestamp = Zeitgeist.timeval_to_timestamp (cur_time);
+      current_media.timestamp = Zeitgeist.Timestamp.from_timeval (cur_time);
       send_event_to_zg (true);
 
       current_media.mrl = null;

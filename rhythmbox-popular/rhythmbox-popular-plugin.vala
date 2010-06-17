@@ -37,11 +37,11 @@ class ZeitgeistPlaylistSource: RB.StaticPlaylistSource {
   private async void load_events () {
     int64 start, now;
     var t = TimeVal ();
-    now = Zeitgeist.timeval_to_timestamp (t);
+    now = Zeitgeist.Timestamp.from_timeval (t);
     if (this.days > 0)
     {
       t.tv_sec -= 60 * 60 * 24 * this.days;
-      start = Zeitgeist.timeval_to_timestamp (t);
+      start = Zeitgeist.Timestamp.from_timeval (t);
     }
     else
     {
