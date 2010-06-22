@@ -51,7 +51,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_RESULT($all_plugins)
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog firefox-libzg geany gedit rhythmbox rhythmbox-popular totem-libzg"
+allowed_plugins="bzr chrome eog firefox-libzg geany gedit rhythmbox rhythmbox-popular totem-libzg totem-recent"
 # currently disabled = "epiphany tomboy"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -155,7 +155,7 @@ for plugin in ${used_plugins}; do
 			# not supported atm
 			continue
 		;;
-		totem-libzg)
+		totem*)
 			if test "${with_vala}" != "yes" ; then
 				plugin_error_or_ignore "you need vala installed to use the ${plugin} plugin"
 				continue
@@ -211,6 +211,7 @@ gedit/Makefile
 rhythmbox/Makefile
 rhythmbox-popular/Makefile
 totem-libzg/Makefile
+totem-recent/Makefile
 ])
 
 AC_MSG_NOTICE([Zeitgeist-dataproviders was configured with the following options:])

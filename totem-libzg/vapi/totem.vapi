@@ -119,9 +119,9 @@ namespace Totem {
 		[CCode (cname = "totem_plugin_create_configure_dialog")]
 		public virtual Gtk.Widget create_configure_dialog ();
 		[CCode (cname = "totem_plugin_load_interface")]
-		public Gtk.Builder load_interface (string name, bool fatal, Gtk.Window parent);
+		public Gtk.Builder load_interface (string name, bool fatal, Gtk.Window parent, void* user_data = null);
 
 		[CCode (cname = "totem_plugin_find_file")]
-		public virtual weak string find_file (string file);
+		public virtual unowned string find_file (string file);
 	}
 }
