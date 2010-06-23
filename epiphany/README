@@ -1,3 +1,0 @@
-This plugin is currently no functional. It needs to be fully updated for the
-new API in Zeitgeist 0.3, and also ported to C or Seed as Epiphany doesn't
-support Python extensions anymore.
