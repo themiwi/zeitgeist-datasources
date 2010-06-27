@@ -1,5 +1,8 @@
 zeitgeistmoduledir = $(libdir)/xul-ext-zeitgeist
 zeitgeistmodule_LTLIBRARIES = libzeitgeist_xpcom.la
+zeitgeistmodule_DATA = zeitgeist.xpt
+
+xul_extdir = $(datadir)/xul-ext-zeitgeist
 
 libzeitgeist_xpcom_la_SOURCES = \
 	ZeitgeistComponent.cpp \
@@ -35,6 +38,9 @@ zeitgeist.xpt: zeitgeist.idl
 
 zeitgeist-library.h:
 	$(AM_V_GEN)$(LN_S) "`$(PKG_CONFIG) --variable includedir zeitgeist-1.0`/zeitgeist-1.0/zeitgeist.h" $@
+
+install-exec-hook:
+	test -h $(xul_extdir)/components || $(LN_S) -f $(zeitgeistmoduledir) $(xul_extdir)/components
 
 # small helper with local install
 local-install: all

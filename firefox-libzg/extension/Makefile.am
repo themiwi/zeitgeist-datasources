@@ -1,20 +1,37 @@
 SUBDIRS = components
 
+extensiondir = $(datadir)/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}
+EXTENSIONS_SYMLINK = $(extensiondir)/xpcom_firefox@zeitgeist-project.com
+
 xul_extdir = $(datadir)/xul-ext-zeitgeist
 xul_ext_DATA = \
-	defaults \
-	chrome \
 	license.txt \
 	chrome.manifest \
 	install.rdf \
-	components/zeitgeist.xpt \
 	$(NULL)
 
+contentdir = $(xul_extdir)/chrome/content
+content_DATA = \
+	chrome/content/zeitgeist.xul \
+	chrome/content/zeitgeist.png \
+	$(NULL)
+
+prefsdir = $(xul_extdir)/defaults/preferences
+prefs_DATA = \
+	defaults/preferences/zeitgeist.js \
+	$(NULL)
+
+install-exec-hook:
+	$(MKDIR_P) $(extensiondir)
+	test -h "$(EXTENSIONS_SYMLINK)" || $(LN_S) -f "$(xul_extdir)" "$(EXTENSIONS_SYMLINK)"
 
 # we want to allow also local install
 EXTENSION_CONTENT = \
 	$(xul_ext_DATA) \
+	defaults \
+	chrome \
 	components/libzeitgeist_xpcom.so \
+	components/zeitgeist.xpt \
 	$(NULL)
 
 local-install: all
