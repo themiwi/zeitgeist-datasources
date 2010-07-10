@@ -22,8 +22,8 @@ prefs_DATA = \
 	$(NULL)
 
 install-exec-hook:
-	$(MKDIR_P) $(extensiondir)
-	test -h "$(EXTENSIONS_SYMLINK)" || $(LN_S) -f "$(xul_extdir)" "$(EXTENSIONS_SYMLINK)"
+	$(MKDIR_P) $(DESTDIR)$(extensiondir)
+	test -h "$(DESTDIR)$(EXTENSIONS_SYMLINK)" || $(LN_S) -f "$(DESTDIR)$(xul_extdir)" "$(DESTDIR)$(EXTENSIONS_SYMLINK)"
 
 # we want to allow also local install
 EXTENSION_CONTENT = \
