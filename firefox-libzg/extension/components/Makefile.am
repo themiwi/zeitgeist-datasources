@@ -40,7 +40,8 @@ zeitgeist-library.h:
 	$(AM_V_GEN)$(LN_S) "`$(PKG_CONFIG) --variable includedir zeitgeist-1.0`/zeitgeist-1.0/zeitgeist.h" $@
 
 install-exec-hook:
-	test -h $(xul_extdir)/components || $(LN_S) -f $(zeitgeistmoduledir) $(xul_extdir)/components
+	test -d $(DESTDIR)$(xul_extdir) || $(MKDIR_P) $(DESTDIR)$(xul_extdir)
+	test -h $(DESTDIR)$(xul_extdir)/components || $(LN_S) -f $(DESTDIR)$(zeitgeistmoduledir) $(DESTDIR)$(xul_extdir)/components
 
 # small helper with local install
 local-install: all
