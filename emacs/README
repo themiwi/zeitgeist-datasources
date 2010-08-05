@@ -1,0 +1,7 @@
+The recommended install is ``make install'', not ``make local-install''.  The
+former uses automake's builtin compilation and locating features.
+
+Either way, you should be able to add the following line to your ``.emacs''
+file:
+
+        (require 'zeitgeist.el)

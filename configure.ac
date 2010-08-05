@@ -51,7 +51,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_RESULT($all_plugins)
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog firefox-libzg geany gedit rhythmbox totem-libzg vim"
+allowed_plugins="bzr chrome eog firefox-libzg geany gedit rhythmbox totem-libzg vim emacs"
 # currently disabled = "epiphany tomboy"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -177,6 +177,9 @@ for plugin in ${used_plugins}; do
 		;;
 		vim)
 		;;
+		emacs)
+			AM_PATH_LISPDIR
+		;;
 		*)
 			plugin_error_or_ignore "${plugin} is not handled"
 			continue
@@ -213,6 +216,7 @@ gedit/Makefile
 rhythmbox/Makefile
 totem-libzg/Makefile
 vim/Makefile
+emacs/Makefile
 ])
 
 AC_MSG_NOTICE([Zeitgeist-dataproviders was configured with the following options:])
