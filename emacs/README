@@ -1,7 +1,7 @@
-The recommended install is ``make install'', not ``make local-install''.  The
-former uses automake's builtin compilation and locating features.
-
-Either way, you should be able to add the following line to your ``.emacs''
+You should be able to add the following line to your ``.emacs''
 file:
 
-        (require 'zeitgeist.el)
+        (load-library "zeitgeist.elc")
+
+Known bug: You may need to restart your login shell after a local-install for
+emacs to recognise the installation.

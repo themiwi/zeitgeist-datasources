@@ -36,8 +36,8 @@
          (lo       (car (cdr now-time)))
          (msecs    (car (cdr (cdr now-time))))) ; This is *micro*seconds. 
 
-    (number-to-string (+ (/ msecs 1000)
-       (* (+ lo (* hi 65536))     1000))))) ; Convert system time to milliseconds.
+  (substring (number-to-string (+ (/ msecs 1000)
+             (* (+ lo (* hi 65536.0))     1000))) 0 -2))) ; Convert system time to milliseconds.
 
 (defun zeitgeist-get-mime-type ()
   "Get the mime type from the extension."
@@ -124,18 +124,18 @@
               (zeitgeist-event-timestamp)
               event-interpretation
               "http://zeitgeist-project.com/schema/1.0/core#UserActivity"
-              "app://emacs.desktop")
-        (list (list fileurl
+              "application://emacs23.desktop")
+        (list (list (concat "file://" fileurl)
            "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo/#Document"
            "http://www.semanticdesktop.org/ontologies/nfo/#FileDataObject"
-           (file-name-directory fileurl)
+           (concat "file://" (file-name-directory fileurl))
            filemime
            (file-name-nondirectory (file-name-sans-versions fileurl))
            "")) ; Some black magic later?
         '(:array :byte 0)))))))
 
 (defun zeitgeist-open-file ()
-  "Tell zeitgeist we openned a file!"
+  "Tell zeitgeist we opened a file!"
   (if (eq nil (buffer-file-name))
       (message "You are not on a file.")
     (zeitgeist-send 'zeitgeist-open-event
