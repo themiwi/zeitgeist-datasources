@@ -13,7 +13,7 @@ local-install:
 	cp $(PLUGIN_FILES)  $(EMACS_PLUGIN_HOME_DIR)
 	cp $(outfilesemacs) $(EMACS_PLUGIN_HOME_DIR)
 	echo $(emacs_load_text_for_bash) >>~/.profile
-	$emacs_load_text_for_bash
+	$(emacs_load_text_for_bash)
 
 local-uninstall:
 	rm $(EMACS_PLUGIN_HOME_DIR)/$(PLUGIN_FILES)
