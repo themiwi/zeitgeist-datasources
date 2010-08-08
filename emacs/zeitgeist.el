@@ -107,11 +107,11 @@
     ((eq event 'zeitgeist-open-event)
        "http://zeitgeist-project.com/ontologies/2010/01/27/zg#AccessEvent")
     ((eq event 'zeitgeist-close-event)
-       "http://zeitgeist-project.com/schema/1.0/core#CloseEvent")
+       "http://zeitgeist-project.com/ontologies/2010/01/27/zg#LeaveEvent")
     ((eq event 'zeitgeist-create-event)
-       "http://zeitgeist-project.com/schema/1.0/core#CreateEvent")
+       "http://zeitgeist-project.com/ontologies/2010/01/27/zg#CreateEvent")
     ((eq event 'zeitgeist-modify-event)
-       "http://zeitgeist-project.com/schema/1.0/core#ModifyEvent")
+       "http://zeitgeist-project.com/ontologies/2010/01/27/zg#ModifyEvent")
     (t nil)))
 
 (defun zeitgeist-send (event fileurl filemime)
@@ -123,11 +123,11 @@
         (list (list :struct (list ""
               (zeitgeist-event-timestamp)
               event-interpretation
-              "http://zeitgeist-project.com/schema/1.0/core#UserActivity"
+              "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity"
               "application://emacs23.desktop")
         (list (list (concat "file://" fileurl)
-           "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo/#Document"
-           "http://www.semanticdesktop.org/ontologies/nfo/#FileDataObject"
+           "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Document"
+           "http://www.semanticdesktop.org/ontologies/nfo#FileDataObject"
            (concat "file://" (file-name-directory fileurl))
            filemime
            (file-name-nondirectory (file-name-sans-versions fileurl))

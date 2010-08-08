@@ -5,3 +5,5 @@ file:
 
 Known bug: You may need to restart your login shell after a local-install for
 emacs to recognise the installation.
+
+Special thanks to mtvoid <m_tuli@yahoo.com> for several bugfixes.
