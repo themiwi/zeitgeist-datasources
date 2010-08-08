@@ -105,13 +105,13 @@
   "Get the Event Interpretation of EVENT."
   (cond
     ((eq event 'zeitgeist-open-event)
-       "http://zeitgeist-project.com/ontologies/2010/01/27/zg#AccessEvent")
+       "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#AccessEvent")
     ((eq event 'zeitgeist-close-event)
-       "http://zeitgeist-project.com/ontologies/2010/01/27/zg#LeaveEvent")
+       "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#LeaveEvent")
     ((eq event 'zeitgeist-create-event)
-       "http://zeitgeist-project.com/ontologies/2010/01/27/zg#CreateEvent")
+       "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#CreateEvent")
     ((eq event 'zeitgeist-modify-event)
-       "http://zeitgeist-project.com/ontologies/2010/01/27/zg#ModifyEvent")
+       "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#ModifyEvent")
     (t nil)))
 
 (defun zeitgeist-send (event fileurl filemime)

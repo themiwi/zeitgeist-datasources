@@ -1,9 +1,10 @@
 You should be able to add the following line to your ``.emacs''
 file:
 
-        (load-library "zeitgeist.elc")
+	(load-library "zeitgeist.elc")
 
-Known bug: You may need to restart your login shell after a local-install for
-emacs to recognise the installation.
+If you chose a local install, before that line, add:
+
+	(setq load-path (cons "~/.emacs.d/lisp" load-path))
 
 Special thanks to mtvoid <m_tuli@yahoo.com> for several bugfixes.
