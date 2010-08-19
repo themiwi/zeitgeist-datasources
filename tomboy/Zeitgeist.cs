@@ -74,13 +74,13 @@ namespace Tomboy.Zeitgeist
 		private static string GetEventInterpetation(EventInterpretation e) {
 			switch(e) {
 			case EventInterpretation.OpenEvent:
-				return "http://zeitgeist-project.com/schema/1.0/core#OpenEvent";
+				return "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#AccessEvent";
 			case EventInterpretation.CloseEvent:
-				return "http://zeitgeist-project.com/schema/1.0/core#CloseEvent";
+				return "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#LeaveEvent";
 			case EventInterpretation.CreateEvent:
-				return "http://zeitgeist-project.com/schema/1.0/core#CreateEvent";
+				return "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#CreateEvent";
 			case EventInterpretation.ModifyEvent:
-				return "http://zeitgeist-project.com/schema/1.0/core#ModifyEvent";
+				return "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#ModifyEvent";
 			default:
 				return null;
 			}
@@ -107,13 +107,13 @@ namespace Tomboy.Zeitgeist
 			e.metadata[0] = ""; //id (filled in by Zeitgeist)
 			e.metadata[1] = millis_now.ToString();
 			e.metadata[2] = ev_interp_string;
-			e.metadata[3] = "http://zeitgeist-project.com/schema/1.0/core#UserActivity";
+			e.metadata[3] = "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity";
 			e.metadata[4] = "application://tomboy.desktop";
 			
 			string[] subject = new string[7];
 			subject[0] = note.Uri;
-			subject[1] = "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo/#Document";
-			subject[2] = "http://www.semanticdesktop.org/ontologies/nfo/#FileDataObject";
+			subject[1] = "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Document";
+			subject[2] = "http://www.semanticdesktop.org/ontologies/nfo#FileDataObject";
 			subject[3] = ""; //origin
 			subject[4] = "application/x-tomboy"; //mimetype
 			subject[5] = note.Title; 
