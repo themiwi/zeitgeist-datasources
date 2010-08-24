@@ -1,7 +1,7 @@
 <Addin id="Zeitgeist"
     namespace="Tomboy"
     name="Zeitgeist Integration"
-    author="Laszlo Pandy <laszlok2@gmail.com>"
+    author="Laszlo Pandy laszlok2@gmail.com"
     description="Logs usage data to Zeitgeist."
     category="Desktop Integration"
     defaultEnabled="true"
