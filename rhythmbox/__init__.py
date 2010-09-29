@@ -23,15 +23,18 @@ import rhythmdb
 import gobject
 import time
 
-from zeitgeist.client import ZeitgeistClient
-from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
-
 try:
+    from zeitgeist.client import ZeitgeistClient
+    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
+
     IFACE = ZeitgeistClient()
 except RuntimeError, e:
     print "Unable to connect to Zeitgeist, won't send events. Reason: '%s'" %e
     IFACE = None
-    
+except ImportError, e:
+    print "Unable to import Zeitgeist module, won't send events."
+    IFACE = None
+
 class ZeitgeistPlugin(rb.Plugin):
     
     def __init__(self):
@@ -56,6 +59,8 @@ class ZeitgeistPlugin(rb.Plugin):
                 IFACE.register_data_source("5463", "Rhythmbox", "Play and organize your music collection",
                                             [Event.new_for_values(actor="application://rhythmbox.desktop")]
                                             )
+        else:
+            print "Load failed..."
         
     @staticmethod
     def get_song_info(db, entry):
@@ -70,7 +75,7 @@ class ZeitgeistPlugin(rb.Plugin):
         
         
     def on_backend_eos(self, backend_player, stream_data, eos_early):
-        print "got eos signal"
+        #print "got eos signal"
         # EOS signal means that the song changed because the song is over.
         # ie. the user did not explicitly change the song.
         self.__manual_switch = False
@@ -84,7 +89,7 @@ class ZeitgeistPlugin(rb.Plugin):
         pass
         
     def playing_song_changed(self, shell, entry):
-        print ("got playing_song_changed signal", shell, entry)
+        #print ("got playing_song_changed signal", shell, entry)
         if self.__current_song is not None:
             self.send_to_zeitgeist_async(self.__current_song, Interpretation.LEAVE_EVENT)
 
@@ -95,7 +100,7 @@ class ZeitgeistPlugin(rb.Plugin):
         gobject.idle_add(self.reset_manual_switch)
         
     def reset_manual_switch(self):
-        print "manual_switch reset to True"
+        #print "manual_switch reset to True"
         """
         After the eos signal has fired, and after the zeitgeist events have
         been sent asynchronously, reset the manual_switch variable.
@@ -137,7 +142,7 @@ class ZeitgeistPlugin(rb.Plugin):
             actor="application://rhythmbox.desktop",
             subjects=[subject,]
         )
-        print event
+        #print event
         IFACE.insert_event(event)
         
     def deactivate(self, shell):
