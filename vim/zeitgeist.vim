@@ -39,14 +39,16 @@ endfunction
 python << endpython
 import os
 import time
-import gio
 import vim
-from zeitgeist.client import ZeitgeistClient
-from zeitgeist.datamodel import Subject, Event, Interpretation, Manifestation
-
 try:
+  import gio
+  from zeitgeist.client import ZeitgeistClient
+  from zeitgeist.datamodel import Subject, Event, Interpretation, Manifestation
+
   zeitgeistclient = ZeitgeistClient() if os.getuid() != 0 else None
 except RuntimeError, e:
+  zeitgeistclient = None
+except ImportError, e:
   zeitgeistclient = None
 endpython
 augroup zeitgeist
