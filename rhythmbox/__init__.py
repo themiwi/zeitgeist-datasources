@@ -41,7 +41,7 @@ class ZeitgeistPlugin(rb.Plugin):
         rb.Plugin.__init__(self)
         
     def activate(self, shell):
-        print "LOADING Zeitgeist plugin ......"
+        print "LOADING Zeitgeist plugin..."
         if IFACE is not None:
             shell_player = shell.get_player()
             shell_player.connect("playing-changed", self.playing_changed)
@@ -55,10 +55,14 @@ class ZeitgeistPlugin(rb.Plugin):
             self.__current_song = None
             self._shell = shell
             
+            # TODO: i18n for the name and description
             if IFACE.get_version() >= [0, 3, 2, 999]:
-                IFACE.register_data_source("5463", "Rhythmbox", "Play and organize your music collection",
-                                            [Event.new_for_values(actor="application://rhythmbox.desktop")]
-                                            )
+                IFACE.register_data_source(
+                    "com.zeitgeist-project,rhythmbox",
+                    "Rhythmbox",
+                    "Logs music-playback related events from Rhythmbox",
+                    [Event.new_for_values(actor="application://rhythmbox.desktop")]
+                    )
         else:
             print "Load failed..."
         
@@ -89,7 +93,6 @@ class ZeitgeistPlugin(rb.Plugin):
         pass
         
     def playing_song_changed(self, shell, entry):
-        #print ("got playing_song_changed signal", shell, entry)
         if self.__current_song is not None:
             self.send_to_zeitgeist_async(self.__current_song, Interpretation.LEAVE_EVENT)
 
@@ -100,7 +103,6 @@ class ZeitgeistPlugin(rb.Plugin):
         gobject.idle_add(self.reset_manual_switch)
         
     def reset_manual_switch(self):
-        #print "manual_switch reset to True"
         """
         After the eos signal has fired, and after the zeitgeist events have
         been sent asynchronously, reset the manual_switch variable.
@@ -126,6 +128,7 @@ class ZeitgeistPlugin(rb.Plugin):
             manifest = Manifestation.USER_ACTIVITY
         else:
             manifest = Manifestation.SCHEDULED_ACTIVITY
+        # TODO: Maybe a Manifestation representing "random song" would be useful?
         
         subject = Subject.new_for_values(
             uri=song["location"],
@@ -142,9 +145,8 @@ class ZeitgeistPlugin(rb.Plugin):
             actor="application://rhythmbox.desktop",
             subjects=[subject,]
         )
-        #print event
+        
         IFACE.insert_event(event)
         
     def deactivate(self, shell):
-        print "UNLOADING Zeitgeist plugin ......."
-
+        print "UNLOADING Zeitgeist plugin..."
