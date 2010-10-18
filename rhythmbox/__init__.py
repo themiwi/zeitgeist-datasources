@@ -48,8 +48,6 @@ class ZeitgeistPlugin(rb.Plugin):
         print "LOADING Zeitgeist plugin ......"
         if IFACE is not None:
             shell_player = shell.get_player()
-            shell_player.connect("playing-changed", self.playing_changed)
-            shell_player.connect("playing-source-changed", self.playing_source_changed)
             shell_player.connect("playing-song-changed", self.playing_song_changed)
 
             backend_player = shell_player.get_property("player")
@@ -81,14 +79,6 @@ class ZeitgeistPlugin(rb.Plugin):
         # EOS signal means that the song changed because the song is over.
         # ie. the user did not explicitly change the song.
         self.__manual_switch = False
-        
-    def playing_changed(self, shell, state):
-        """ using this signal to trigger play/pause switches"""
-        pass
-        
-    def playing_source_changed(self, shell, source):
-        """ use this signal to trigger changes between local music, radio, online music etc."""
-        pass
         
     def playing_song_changed(self, shell, entry):
         #print ("got playing_song_changed signal", shell, entry)
@@ -136,7 +126,7 @@ class ZeitgeistPlugin(rb.Plugin):
             #~ origin="", #TBD
             mimetype=song["mimetype"],
             text=" - ".join([song["title"], song["artist"], song["album"]])
-        )            
+        )
         event = Event.new_for_values(
             timestamp=int(time.time()*1000),
             interpretation=unicode(event_type),
