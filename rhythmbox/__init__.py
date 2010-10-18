@@ -30,18 +30,15 @@ import rhythmdb
 import gobject
 import time
 
-try:
-    from zeitgeist.client import ZeitgeistClient
-    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
+from zeitgeist.client import ZeitgeistClient
+from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
 
+try:
     IFACE = ZeitgeistClient()
 except RuntimeError, e:
     print "Unable to connect to Zeitgeist, won't send events. Reason: '%s'" %e
     IFACE = None
-except ImportError, e:
-    print "Unable to import Zeitgeist module, won't send events."
-    IFACE = None
-
+    
 class ZeitgeistPlugin(rb.Plugin):
     
     def __init__(self):
@@ -66,8 +63,6 @@ class ZeitgeistPlugin(rb.Plugin):
                 IFACE.register_data_source("5463", "Rhythmbox", "Play and organize your music collection",
                                             [Event.new_for_values(actor="application://rhythmbox.desktop")]
                                             )
-        else:
-            print "Load failed..."
         
     @staticmethod
     def get_song_info(db, entry):
