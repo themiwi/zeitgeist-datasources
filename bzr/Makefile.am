@@ -3,11 +3,15 @@ bzrplugin_DATA = __init__.py
 
 # we want to allow also local install
 BZR_PLUGIN_HOME_DIR = ~/.bazaar/plugins/zeitgeist
+BZR_ICON_DIR = ~/.local/share/icons
 
 local-install:
 	mkdir -p $(BZR_PLUGIN_HOME_DIR)
 	cp __init__.py $(BZR_PLUGIN_HOME_DIR)
+	mkdir -p $(BZR_ICON_DIR)
+	cp bzr-icon-64.png $(BZR_ICON_DIR)
 
 local-uninstall:
 	-rm -rf $(BZR_PLUGIN_HOME_DIR)
+	-rm -rf $(BZR_ICON_DIR)
 
