@@ -1,5 +1,5 @@
 totemplugindir = $(libdir)/totem/plugins/zeitgeist
-totemplugin_DATA = zeitgeist.totem-plugin
+dist_totemplugin_DATA = zeitgeist.totem-plugin
 totemplugin_LTLIBRARIES = libtotem-zeitgeist-plugin.la
 
 AM_VALAFLAGS = \
