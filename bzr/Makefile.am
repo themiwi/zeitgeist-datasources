@@ -1,5 +1,10 @@
+EXTRA_DIST = bzr-icon-64.png
+
 bzrplugindir = $(datadir)/pyshared/bzrlib/plugins/zeitgeist
 bzrplugin_DATA = __init__.py
+
+bzricondir = $(datadir)/pixmaps
+bzricon_DATA = bzr-icon-64.png
 
 # we want to allow also local install
 BZR_PLUGIN_HOME_DIR = ~/.bazaar/plugins/zeitgeist
