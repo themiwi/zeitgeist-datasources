@@ -65,7 +65,7 @@ def post_commit(local, master, old_revno, old_revid, new_revno, new_revid):
 
     subject = Subject.new_for_values(
         uri=unicode(master.base),
-        interpretation=unicode(Interpretation.SOURCE_CODE),
+        interpretation=unicode(Interpretation.FOLDER),
         manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
         text=unicode(_text),
         origin=unicode(master.base),
@@ -90,7 +90,7 @@ def post_pull(pull_result):
     _text += revision.get_summary()
     subject = Subject.new_for_values(
         uri=unicode(master.base),
-        interpretation=unicode(Interpretation.SOURCE_CODE),
+        interpretation=unicode(Interpretation.FOLDER),
         manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
         text=unicode(_text),
         origin=unicode(master.base),
