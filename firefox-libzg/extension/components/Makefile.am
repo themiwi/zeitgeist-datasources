@@ -29,6 +29,11 @@ BUILT_SOURCES = \
 	zeitgeist.h \
 	zeitgeist.xpt \
 	$(NULL)
+	
+EXTRA_DIST = \
+	zeitgeist.idl \
+	zeitgeistextend.h \
+	$(NULL)
 
 zeitgeist.h: zeitgeist.idl
 	$(AM_V_GEN)$(XPIDL_BIN) -m header -I $(XUL_IDLDIR) -o zeitgeist $<

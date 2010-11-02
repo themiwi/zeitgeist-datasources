@@ -4,20 +4,20 @@ extensiondir = $(datadir)/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e973
 EXTENSIONS_SYMLINK = $(extensiondir)/xpcom_firefox@zeitgeist-project.com
 
 xul_extdir = $(datadir)/xul-ext-zeitgeist
-xul_ext_DATA = \
+dist_xul_ext_DATA = \
 	license.txt \
 	chrome.manifest \
 	install.rdf \
 	$(NULL)
 
 contentdir = $(xul_extdir)/chrome/content
-content_DATA = \
+dist_content_DATA = \
 	chrome/content/zeitgeist.xul \
 	chrome/content/zeitgeist.png \
 	$(NULL)
 
 prefsdir = $(xul_extdir)/defaults/preferences
-prefs_DATA = \
+dist_prefs_DATA = \
 	defaults/preferences/zeitgeist.js \
 	$(NULL)
 
