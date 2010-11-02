@@ -1,7 +1,7 @@
 PLUGIN_FILES = zeitgeist.vim
 
 vimplugindir = $(datadir)/vim/vim72/plugin
-vimplugin_DATA = $(PLUGIN_FILES)
+dist_vimplugin_DATA = $(PLUGIN_FILES)
 
 # we want to allow also local install
 VIM_PLUGIN_HOME_DIR = ~/.vim/plugin
