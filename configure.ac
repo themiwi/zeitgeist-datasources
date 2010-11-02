@@ -221,10 +221,7 @@ if test "x${PLUGINS}" != "x" ; then
                                         		continue 2
                                         	;;
                                         	chrome)
-                                        		AC_CONFIG_FILES([
-                                        			chrome/Makefile
-                                        			npapi-plugin/Makefile
-                                        		])
+                                        		AC_CONFIG_FILES([chrome/Makefile])
                                         		extra_subdirs="${extra_subdirs} npapi-plugin"
                                         		continue 2
                                         	;;

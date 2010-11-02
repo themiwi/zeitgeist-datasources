@@ -1,4 +1,4 @@
-chromeresourcedir = /opt/google/chrome/resources/zeitgeist_plugin
+chromeresourcedir = $(datadir)/opt/google/chrome/resources/zeitgeist_plugin
 dist_chromeresource_DATA = \
 	background.html \
 	content_script.js \

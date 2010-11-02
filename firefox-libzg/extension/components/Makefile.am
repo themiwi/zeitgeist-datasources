@@ -34,6 +34,11 @@ EXTRA_DIST = \
 	zeitgeist.idl \
 	zeitgeistextend.h \
 	$(NULL)
+	
+DISTCLEANFILES = \
+	$(BUILT_SOURCES) \
+	$(NULL)
+	
 
 zeitgeist.h: zeitgeist.idl
 	$(AM_V_GEN)$(XPIDL_BIN) -m header -I $(XUL_IDLDIR) -o zeitgeist $<
