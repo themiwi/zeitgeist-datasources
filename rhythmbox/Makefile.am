@@ -1,7 +1,7 @@
 PLUGIN_FILES = zeitgeist.rb-plugin __init__.py
 
 rhythmboxplugindir = $(libdir)/rhythmbox/plugins/zeitgeist-plugin
-rhythmboxplugin_DATA = $(PLUGIN_FILES)
+dist_rhythmboxplugin_DATA = $(PLUGIN_FILES)
 
 # we want to allow also local install
 RHYTHMBOX_PLUGIN_HOME_DIR = ~/.local/share/rhythmbox/plugins/zeitgeist-plugin

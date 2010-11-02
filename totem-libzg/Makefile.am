@@ -1,5 +1,5 @@
 totemplugindir = $(libdir)/totem/plugins/zeitgeist
-totemplugin_DATA = zeitgeist.totem-plugin
+dist_totemplugin_DATA = zeitgeist.totem-plugin
 totemplugin_LTLIBRARIES = libtotem-zeitgeist-plugin.la
 
 AM_VALAFLAGS = \
@@ -16,7 +16,7 @@ libtotem_zeitgeist_plugin_la_CFLAGS = \
 	$(ZEITGEIST_CFLAGS) \
 	$(GTK_CFLAGS) \
 	$(TOTEM_PLPARSER_CFLAGS) \
-	-I./headers \
+	-I$(top_srcdir)/totem-libzg/headers \
 	$(NULL)
 	
 libtotem_zeitgeist_plugin_la_LIBADD = \
@@ -25,6 +25,13 @@ libtotem_zeitgeist_plugin_la_LIBADD = \
 	$(NULL)
 libtotem_zeitgeist_plugin_la_LDFLAGS = \
 	-module -avoid-version \
+	$(NULL)
+	
+EXTRA_DIST = \
+	$(top_srcdir)/totem-libzg/headers/totem.h \
+	$(top_srcdir)/totem-libzg/headers/totem-plugin.h \
+	$(top_srcdir)/totem-libzg/headers/totem-playlist.h \
+	$(top_srcdir)/totem-libzg/headers/bacon-video-widget.h \
 	$(NULL)
 
 

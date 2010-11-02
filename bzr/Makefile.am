@@ -1,5 +1,5 @@
 bzrplugindir = $(datadir)/pyshared/bzrlib/plugins/zeitgeist
-bzrplugin_DATA = __init__.py
+dist_bzrplugin_DATA = __init__.py
 
 # we want to allow also local install
 BZR_PLUGIN_HOME_DIR = ~/.bazaar/plugins/zeitgeist

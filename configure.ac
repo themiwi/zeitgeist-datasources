@@ -203,23 +203,11 @@ AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_CXXFLAGS])
 AC_SUBST([AM_LDFLAGS])
 
-AC_OUTPUT([
-Makefile
-bzr/Makefile
-chrome/Makefile
-eog/Makefile
-firefox-libzg/Makefile
-firefox-libzg/extension/Makefile
-firefox-libzg/extension/components/Makefile
-geany/Makefile
-gedit/Makefile
-rhythmbox/Makefile
-totem-libzg/Makefile
-vim/Makefile
-emacs/Makefile
-])
+AC_CONFIG_FILES([Makefile])
 
 AC_MSG_NOTICE([Zeitgeist-dataproviders was configured with the following options:])
+
+extra_subdirs=""
 
 if test "x${PLUGINS}" != "x" ; then
         for allowed_plugin in ${ALL_PLUGINS}; do
@@ -227,6 +215,57 @@ if test "x${PLUGINS}" != "x" ; then
                         case ${allowed_plugin} in
                                 ${plugin})
                                         AC_MSG_NOTICE([** ${allowed_plugin} plugin enabled])
+                                        case ${allowed_plugin} in
+                                        	bzr)
+                                        		AC_CONFIG_FILES([bzr/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	chrome)
+                                        		AC_CONFIG_FILES([chrome/Makefile])
+                                        		extra_subdirs="${extra_subdirs} npapi-plugin"
+                                        		continue 2
+                                        	;;
+                                        	eog)
+                                        		AC_CONFIG_FILES([eog/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	firefox-libzg)
+                                        		AC_CONFIG_FILES([
+                                        			firefox-libzg/Makefile
+                                        			firefox-libzg/extension/Makefile
+                                        			firefox-libzg/extension/components/Makefile
+                                        		])
+                                        		continue 2
+                                        	;;
+                                        	geany)
+                                        		AC_CONFIG_FILES([geany/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	gedit)
+                                        		AC_CONFIG_FILES([gedit/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	rhythmbox)
+                                        		AC_CONFIG_FILES([rhythmbox/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	totem-libzg)
+                                        		AC_CONFIG_FILES([totem-libzg/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	vim)
+                                        		AC_CONFIG_FILES([vim/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	emacs)
+                                        		AC_CONFIG_FILES([emacs/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	*)
+                                        		AC_MSG_ERROR([cannot configure ${allowed_plugin}])
+                                        		continue 2
+                                        	;;
+                                        esac
                                         continue 2
                                 ;;
                                 *);;
@@ -237,4 +276,7 @@ if test "x${PLUGINS}" != "x" ; then
 else
         AC_MSG_NOTICE([   No plugins enabled])
 fi
- 
+
+EXTRA_SUBDIRS=$extra_subdirs
+AC_SUBST([EXTRA_SUBDIRS])
+AC_OUTPUT
