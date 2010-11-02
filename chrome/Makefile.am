@@ -1,5 +1,5 @@
 chromeresourcedir = /opt/google/chrome/resources/zeitgeist_plugin
-chromeresource_DATA = \
+dist_chromeresource_DATA = \
 	background.html \
 	content_script.js \
 	manifest.json \
@@ -9,15 +9,15 @@ pluginbinarydir = $(chromeresourcedir)/plugin
 pluginbinary_LTLIBRARIES = libzeitgeist-npapi-plugin.la
 
 libzeitgeist_npapi_plugin_la_SOURCES = \
-	plugin/np-zeitgeist.cc \
+	$(top_srcdir)/npapi-plugin/np-zeitgeist.cc \
 	$(NULL)
 
 libzeitgeist_npapi_plugin_la_CXXFLAGS = \
 	-pedantic -fPIC -Wall -std=c++0x -O2 \
 	$(ZEITGEIST_CFLAGS) \
-	-I./plugin \
-	-I./plugin/third_party \
-	-I./plugin/third_party/npapi \
+	-I$(top_srcdir)/npapi-plugin \
+	-I$(top_srcdir)/npapi-plugin/third_party \
+	-I$(top_srcdir)/npapi-plugin/third_party/npapi \
 	$(NULL)
 
 libzeitgeist_npapi_plugin_la_LIBADD = \
@@ -28,9 +28,18 @@ libzeitgeist_npapi_plugin_la_LDFLAGS = \
 	-Wl,--no-undefined \
 	-module -avoid-version \
 	$(NULL)
+	
+EXTRA_DIST = \
+	$(top_srcdir)/npapi-plugin/third_party/webkit/glue/plugins/nphostapi.h \
+	$(top_srcdir)/npapi-plugin/third_party/npapi/bindings/npapi.h \
+	$(top_srcdir)/npapi-plugin/third_party/npapi/bindings/npruntime.h \
+	$(top_srcdir)/npapi-plugin/base/port.h \
+	$(top_srcdir)/npapi-plugin/base/basictypes.h \
+	$(top_srcdir)/npapi-plugin/build/build_config.h \
+	$(NULL)
 
 # we want to allow also local install
 local-install: all
-	ln -s $(abs_srcdir)/.libs/libzeitgeist-npapi-plugin.so plugin/libzeitgeist-npapi-plugin.so
+	ln -s $(abs_srcdir)/.libs/libzeitgeist-npapi-plugin.so $(top_srcdir)/npapi-plugin/libzeitgeist-npapi-plugin.so
 
 local-uninstall: all
