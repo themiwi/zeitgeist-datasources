@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.freedesktop.Telepathy.Client.Zeitgeist
+Exec=/home/mortenmj/Software/zeitgeist-dataproviders/telepathy/zeitgeist-telepathy-observer.py
