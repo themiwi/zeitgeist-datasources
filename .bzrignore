@@ -1,3 +1,9 @@
 firefox*/*.xpi
 firefox-libzg/extension/components/zeitgeist.h
 firefox-libzg/extension/components/zeitgeist.xpt
+Makefile
+Makefile.in
+.deps
+.libs
+*.la
+*.lo

@@ -35,11 +35,26 @@ fi
 AM_CONDITIONAL(ENABLE_VALA, test "x$with_vala" = "xyes")
 
 dnl ==============================================
+dnl Check for Mono
+dnl ==============================================
+
+AC_ARG_WITH([mono],
+	AS_HELP_STRING([--without-mono],
+		[Disables Mono plugins]),
+	[],[with_mono=yes])
+
+AM_CONDITIONAL(ENABLE_MONO, test "x$with_mono" = "xyes")
+
+AC_PATH_PROG(GMCS, gmcs, no)
+AC_PATH_PROG(XBUILD, xbuild, no)
+
+dnl ==============================================
 dnl Check commonly used packages
 dnl ==============================================
 
 PKG_CHECK_MODULES(ZEITGEIST, zeitgeist-1.0, [HAVE_LIBZG=yes], [HAVE_LIBZG=no])
 PKG_CHECK_MODULES(GTK, gtk+-2.0, [HAVE_GTK=yes], [HAVE_GTK=no])
+PKG_CHECK_MODULES([MONO], [mono >= 2.4])
 
 dnl ==============================================
 dnl Enable building only supported plugins
@@ -51,8 +66,8 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_RESULT($all_plugins)
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog firefox-libzg geany gedit rhythmbox totem-libzg vim emacs"
-# currently disabled = "epiphany tomboy"
+allowed_plugins="bzr chrome eog firefox-libzg geany gedit rhythmbox totem-libzg vim emacs tomboy"
+# currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
 #   - see chrome's Makefile.am for how to compile it
@@ -152,8 +167,26 @@ for plugin in ${used_plugins}; do
 			fi
 		;;
 		tomboy)
-			# not supported atm
-			continue
+			if test "${with_mono}" != "yes" ; then
+				plugin_error_or_ignore "you need mono(gmcs) installed to use the ${plugin} plugin"
+				continue
+			fi
+			PKG_CHECK_MODULES(ZEITGEIST_SHARP, zeitgeist-sharp , ENABLE_ZEITGEIST_SHARP=yes, ENABLE_ZEITGEIST_SHARP=no)
+			if test "${ENABLE_ZEITGEIST_SHARP}" != "yes" ; then
+				plugin_error_or_ignore "zeitgeist-sharp package not found"
+				continue
+			fi
+			AC_PATH_PROG(TOMBOY, tomboy, no)
+			if test "x$TOMBOY" = "xno"; then
+                AC_MSG_ERROR([You need to install Tomboy])
+            fi
+			if test "x$GMCS" = "xno"; then
+                AC_MSG_ERROR([You need to install gmcs])
+            fi  
+            if test "x$XBUILD" = "xno"; then
+              AC_MSG_ERROR([You need to install xbuild])
+            fi
+            AC_SUBST(ZEITGEISTDP_LIBS)
 		;;
 		totem*)
 			if test "${with_vala}" != "yes" ; then
@@ -239,6 +272,10 @@ if test "x${PLUGINS}" != "x" ; then
                                         	;;
                                         	geany)
                                         		AC_CONFIG_FILES([geany/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	tomboy)
+                                        		AC_CONFIG_FILES([tomboy/Makefile])
                                         		continue 2
                                         	;;
                                         	gedit)
