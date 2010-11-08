@@ -4,14 +4,14 @@ CSFLAGS = 		\
 	-target:library
 
 ASSEMBLIES = 					\
-	$(LINK_TOMBOY_EXE)			\
-	$(GTKSHARP_LIBS) 				\
-	$(LINK_MONO_ADDINS)			\
-	$(ZEITGEISTDP_LIBS)         \
+	$(TOMBOY_ADDINS_LIBS)			\
+	$(GTK_SHARP_LIBS)			\
+	$(ZEITGEIST_SHARP_LIBS)     \
 	-r:Mono.Posix
 
 ADDIN_NAME = ZeitgeistDataprovider
-TARGET = $(top_builddir)/bin/addins/$(ADDIN_NAME).dll
+TARGET_DIR = $(top_builddir)/bin/addins
+TARGET = $(TARGET_DIR)/$(ADDIN_NAME).dll
 CSFILES = \
 	$(srcdir)/Zeitgeist.cs     \
 	$(srcdir)/ZeitgeistAddin.cs     \
@@ -23,7 +23,7 @@ RESOURCES = \
 $(TARGET).mdb: $(TARGET)
 
 $(TARGET): $(CSFILES) $(TOMBOY_EXE_PATH)
-	mkdir -p `dirname $(TARGET)` && $(CSC) -out:$@ $(CSFLAGS) $(ASSEMBLIES) $(CSFILES) $(RESOURCES)
+	mkdir -p $(TARGET_DIR) && $(GMCS) -out:$@ $(CSFLAGS) $(ASSEMBLIES) $(CSFILES) $(RESOURCES)
 
 
 addinsdir = $(pkglibdir)/addins

@@ -171,7 +171,10 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "you need mono(gmcs) installed to use the ${plugin} plugin"
 				continue
 			fi
-			PKG_CHECK_MODULES(ZEITGEIST_SHARP, zeitgeist-sharp , ENABLE_ZEITGEIST_SHARP=yes, ENABLE_ZEITGEIST_SHARP=no)
+			PKG_CHECK_MODULES(ZEITGEIST_SHARP, zeitgeist-sharp,
+				ENABLE_ZEITGEIST_SHARP=yes, ENABLE_ZEITGEIST_SHARP=no)
+			PKG_CHECK_MODULES(TOMBOY_ADDINS, tomboy-addins)
+			PKG_CHECK_MODULES(GTK_SHARP, gtk-sharp-2.0)
 			if test "${ENABLE_ZEITGEIST_SHARP}" != "yes" ; then
 				plugin_error_or_ignore "zeitgeist-sharp package not found"
 				continue
@@ -186,7 +189,7 @@ for plugin in ${used_plugins}; do
             if test "x$XBUILD" = "xno"; then
               AC_MSG_ERROR([You need to install xbuild])
             fi
-            AC_SUBST(ZEITGEISTDP_LIBS)
+            AC_SUBST(ZEITGEIST_SHARP_LIBS)
 		;;
 		totem*)
 			if test "${with_vala}" != "yes" ; then
