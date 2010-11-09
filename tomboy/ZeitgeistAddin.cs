@@ -82,7 +82,7 @@ namespace Tomboy.Zeitgeist
 		
 		public const string TomboyUri = "application://tomboy.desktop";
 		
-		public const string NoteMimetype = "application/x-tomboy";
+		public const string NoteMimetype = "application/x-note";
 		
 		#endregion
 	}
