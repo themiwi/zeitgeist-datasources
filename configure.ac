@@ -173,23 +173,28 @@ for plugin in ${used_plugins}; do
 			PKG_CHECK_MODULES(ZEITGEIST_SHARP, zeitgeist-sharp,
 				ENABLE_ZEITGEIST_SHARP=yes, ENABLE_ZEITGEIST_SHARP=no)
 			PKG_CHECK_MODULES(TOMBOY_ADDINS, tomboy-addins)
-			PKG_CHECK_MODULES(GTK_SHARP, gtk-sharp-2.0)
-			if test "${ENABLE_ZEITGEIST_SHARP}" != "yes" ; then
+			PKG_CHECK_MODULES(GTK_SHARP, gtk-sharp-2.0, 
+				HAS_GTK_SHARP=yes, HAS_GTK_SHARP=no)
+			if test "${ENABLE_ZEITGEIST_SHARP}" = "no" ; then
 				plugin_error_or_ignore "zeitgeist-sharp package not found"
 				continue
 			fi
 			AC_PATH_PROG(TOMBOY, tomboy, no)
 			if test "x$TOMBOY" = "xno"; then
-				AC_MSG_ERROR([You need to install Tomboy])
+				plugin_error_or_ignore "You need to install tomboy"
+				continue
 			fi
 			if test "x$GMCS" = "xno"; then
-				AC_MSG_ERROR([You need to install gmcs])
+				plugin_error_or_ignore "You need to install gmcs"
+				continue
 			fi
 			if test "x$XBUILD" = "xno"; then
-			  AC_MSG_ERROR([You need to install xbuild])
+			  plugin_error_or_ignore "You need to install xbuild"
+				continue
 			fi
 			if test "x$GTK_SHARP" = "xno"; then
-			AC_MSG_ERROR([Your need to install gtk-sharp])
+				plugin_error_or_ignore "You need to install gtk-sharp"
+				continue
 			fi
 			AC_SUBST(ZEITGEIST_SHARP_LIBS)
 		;;
