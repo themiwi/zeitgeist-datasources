@@ -180,15 +180,18 @@ for plugin in ${used_plugins}; do
 			fi
 			AC_PATH_PROG(TOMBOY, tomboy, no)
 			if test "x$TOMBOY" = "xno"; then
-                AC_MSG_ERROR([You need to install Tomboy])
-            fi
+				AC_MSG_ERROR([You need to install Tomboy])
+			fi
 			if test "x$GMCS" = "xno"; then
-                AC_MSG_ERROR([You need to install gmcs])
-            fi  
-            if test "x$XBUILD" = "xno"; then
-              AC_MSG_ERROR([You need to install xbuild])
-            fi
-            AC_SUBST(ZEITGEIST_SHARP_LIBS)
+				AC_MSG_ERROR([You need to install gmcs])
+			fi
+			if test "x$XBUILD" = "xno"; then
+			  AC_MSG_ERROR([You need to install xbuild])
+			fi
+			if test "x$GTK_SHARP" = "xno"; then
+			AC_MSG_ERROR([Your need to install gtk-sharp])
+			fi
+			AC_SUBST(ZEITGEIST_SHARP_LIBS)
 		;;
 		totem*)
 			if test "${with_vala}" != "yes" ; then
