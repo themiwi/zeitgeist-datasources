@@ -54,7 +54,6 @@ dnl ==============================================
 
 PKG_CHECK_MODULES(ZEITGEIST, zeitgeist-1.0, [HAVE_LIBZG=yes], [HAVE_LIBZG=no])
 PKG_CHECK_MODULES(GTK, gtk+-2.0, [HAVE_GTK=yes], [HAVE_GTK=no])
-PKG_CHECK_MODULES([MONO], [mono >= 2.4])
 
 dnl ==============================================
 dnl Enable building only supported plugins
