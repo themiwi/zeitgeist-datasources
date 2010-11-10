@@ -167,7 +167,6 @@ for plugin in ${used_plugins}; do
 		;;
 		tomboy)
 			if test "${with_mono}" != "yes" ; then
-				plugin_error_or_ignore "you need mono(gmcs) installed to use the ${plugin} plugin"
 				continue
 			fi
 			PKG_CHECK_MODULES(ZEITGEIST_SHARP, zeitgeist-sharp,
