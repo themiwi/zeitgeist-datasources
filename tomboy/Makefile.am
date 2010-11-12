@@ -33,3 +33,16 @@ EXTRA_DIST =            	\
 DISTCLEANFILES = \
 	$(TARGET) \
 	$(TARGET).mdb
+
+TOMBOY_ADDIN_HOME_DIR = ~/.config/tomboy/addins
+
+local-install: $(addins_DATA)
+	mkdir -p $(TOMBOY_ADDIN_HOME_DIR)
+	cp $(addins_DATA) $(TOMBOY_ADDIN_HOME_DIR)
+
+local-uninstall:
+	for f in $(addins_DATA); \
+	do \
+		echo remove $$f; \
+		rm -f $(TOMBOY_ADDIN_HOME_DIR)/$$f; \
+	done
