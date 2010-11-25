@@ -1,7 +1,8 @@
 {
   "name": "Zeitgeist Plugin",
   "description": "Sends events to Zeitgeist about sites you visit",
-  "version": "1",
+  "version": "1.1",
+  "minimum_chrome_version": "6",
   "background_page": "background.html",
   "permissions": [
     "bookmarks", "tabs", "http://*/*", "https://*/*"

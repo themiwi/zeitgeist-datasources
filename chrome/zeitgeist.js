@@ -21,24 +21,35 @@ function onBookmarkCreated (bookmarkid, bookmark) {
 	plugin.insertEvent(url, url, mimetype, title, plugin.BOOKMARK);
 }
 
+function sendAccessEvent (documentInfo) {
+	var url = documentInfo.url;
+	var origin = documentInfo.origin;
+	var mimetype = documentInfo.mimeType;
+	var title = documentInfo.title;
+	plugin.insertEvent(url,
+	                   origin ? origin : url,
+	                   mimetype ? mimetype : "text/html",
+	                   title);
+}
+
+// yea, this worked in chrome 5
 function onExtensionConnect (port) {
 	port.onMessage.addListener(
 		function(message) {
-			var url = message.url;
-			var origin = message.origin;
-			var mimetype = message.mimeType;
-			var title = message.title;
-			plugin.insertEvent(url,
-			                   origin ? origin : url,
-			                   mimetype ? mimetype : "text/html",
-			                   title);
+			sendAccessEvent(message);
 		}
 	);
 }
 
+// and this works in chrome 7
+function onExtensionRequest (request, sender, sendResponse) {
+	sendAccessEvent(request);
+}
+
 plugin.setActor("application://google-chrome.desktop");
 
-chrome.extension.onConnect.addListener (onExtensionConnect);
+//chrome.extension.onConnect.addListener (onExtensionConnect);
+chrome.extension.onRequest.addListener (onExtensionRequest);
 chrome.bookmarks.onCreated.addListener (onBookmarkCreated);
 chrome.tabs.onUpdated.addListener (onTabUpdated);
 chrome.tabs.onCreated.addListener (onTabCreated);

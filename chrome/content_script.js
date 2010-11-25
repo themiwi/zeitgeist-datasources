@@ -30,7 +30,7 @@ function zgGetDocumentInfo () {
 	var contentType = zgGetContentTypeFromHeader();
 	if (contentType) {
 		docInfo["mimeType"] = contentType;
-		chrome.extension.sendRequest({name: "zgPlugin"}, docInfo);
+		chrome.extension.sendRequest(docInfo);
 	} else {
 		// send extra request to get the mime type
 		var request = new XMLHttpRequest();
@@ -40,7 +40,7 @@ function zgGetDocumentInfo () {
 				var content = request.getResponseHeader("Content-Type");
 				if (!content) return;
 				docInfo["mimeType"] = content.split(';')[0];
-				chrome.extension.sendRequest({name: "zgPlugin"}, docInfo);
+				chrome.extension.sendRequest(docInfo);
 			}
 		}
 		request.send(null);
