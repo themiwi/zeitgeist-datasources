@@ -160,6 +160,7 @@ class ZChannel(gobject.GObject, telepathy.client.Channel):
         except KeyError:
             self._target_alias = self._target_id
         
+        self._connect_to_signals()
         self._default_operations_finished()
 
     def _get_requested_cb(self, req):
@@ -188,14 +189,12 @@ class ZChannel(gobject.GObject, telepathy.client.Channel):
     # which depend on each other are executed in order.
     def _channel_ready(self, channel):
         self._target_id = self.properties[CHANNEL + '.TargetID']
-
+        
         # Get contact attribute interfaces
         self[dbus.PROPERTIES_IFACE].Get(CHANNEL,
                 'Requested',
                 reply_handler=self._get_requested_cb,
                 error_handler=error)
-
-        self._connect_to_signals()
 
     # This is necessary so our signal isn't sent over D-Bus
     def do_closed(self):
@@ -228,7 +227,7 @@ class ZTextChannel(ZChannel):
         if self._channel_requested:
             manifestation = unicode(Manifestation.USER_ACTIVITY)
         else:
-            manifestation = unicode(Manifestation.WORLD_NOTIFICATION)
+            manifestation = unicode(Manifestation.WORLD_ACTIVITY)
 
         timestamp = int(time() * 1000)
 
@@ -271,7 +270,15 @@ class ZTextChannel(ZChannel):
     def _message_received_cb(self, identification, timestamp, sender, contenttype,
             flags, content):
         logging.debug("Message received")
-
+        if not self._subject:
+            self._subject = [Subject.new_for_values(
+                uri = self._target_id,
+                interpretation = unicode(Interpretation.IMMESSAGE),
+                manifestation = unicode(Manifestation.SOFTWARE_SERVICE),
+                origin = self.account_path,
+                mimetype = "text/plain",
+                text = self._target_alias)]
+        
         timestamp = timestamp * 1000
 
         event = Event.new_for_values(
