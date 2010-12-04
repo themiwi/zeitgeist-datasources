@@ -159,7 +159,6 @@ class ZChannel(gobject.GObject, telepathy.client.Channel):
                     '/alias']
         except KeyError:
             self._target_alias = self._target_id
-        print "*********************** CHANNEL READY ***************************"
         self._connect_to_signals()
         self._default_operations_finished()
 
@@ -179,7 +178,6 @@ class ZChannel(gobject.GObject, telepathy.client.Channel):
     def _release_channel(self):
         # Finished with critical tasks.
         self.ready_handler(self)
-        
 
     def _connect_to_signals(self):
         # Connect to signals
