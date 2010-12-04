@@ -159,6 +159,7 @@ class ZChannel(gobject.GObject, telepathy.client.Channel):
                     '/alias']
         except KeyError:
             self._target_alias = self._target_id
+        
         self._connect_to_signals()
         self._default_operations_finished()
 
