@@ -189,6 +189,7 @@ class ZChannel(gobject.GObject, telepathy.client.Channel):
     # which depend on each other are executed in order.
     def _channel_ready(self, channel):
         self._target_id = self.properties[CHANNEL + '.TargetID']
+        
         # Get contact attribute interfaces
         self[dbus.PROPERTIES_IFACE].Get(CHANNEL,
                 'Requested',
