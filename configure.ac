@@ -65,7 +65,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_RESULT($all_plugins)
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog firefox-libzg geany gedit rhythmbox totem-libzg vim emacs tomboy"
+allowed_plugins="bzr chrome eog firefox-libzg geany gedit rhythmbox totem-libzg vim emacs tomboy telepathy"
 # currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -222,6 +222,8 @@ for plugin in ${used_plugins}; do
 		emacs)
 			AM_PATH_LISPDIR
 		;;
+		telepathy)
+		;;
 		*)
 			plugin_error_or_ignore "${plugin} is not handled"
 			continue
@@ -307,6 +309,10 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([emacs/Makefile])
                                         		continue 2
                                         	;;
+											telepathy)
+												AC_CONFIG_FILES([telepathy/Makefile])
+												continue 2
+											;;
                                         	*)
                                         		AC_MSG_ERROR([cannot configure ${allowed_plugin}])
                                         		continue 2
