@@ -171,7 +171,8 @@ for plugin in ${used_plugins}; do
 			fi
 			PKG_CHECK_MODULES(ZEITGEIST_SHARP, zeitgeist-sharp,
 				ENABLE_ZEITGEIST_SHARP=yes, ENABLE_ZEITGEIST_SHARP=no)
-			PKG_CHECK_MODULES(TOMBOY_ADDINS, tomboy-addins)
+			PKG_CHECK_MODULES(TOMBOY_ADDINS, tomboy-addins,
+                HAS_TOMBOY_ADDINS=yes, HAS_TOMBOY_ADDINS=no)
 			PKG_CHECK_MODULES(GTK_SHARP, gtk-sharp-2.0, 
 				HAS_GTK_SHARP=yes, HAS_GTK_SHARP=no)
 			if test "${ENABLE_ZEITGEIST_SHARP}" = "no" ; then
@@ -179,7 +180,7 @@ for plugin in ${used_plugins}; do
 				continue
 			fi
 			AC_PATH_PROG(TOMBOY, tomboy, no)
-			if test "x$TOMBOY" = "xno"; then
+			if test "x$TOMBOY_ADDINS" = "xno"; then
 				plugin_error_or_ignore "You need to install tomboy"
 				continue
 			fi
