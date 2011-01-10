@@ -1,3 +1,5 @@
+EXTRA_DIST = xchat-plugin.h
+
 xchatpluginbinarydir = $(libdir)/xchat/plugins
 xchatpluginbinary_LTLIBRARIES = zeitgeist_dataprovider.la
 

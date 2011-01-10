@@ -65,7 +65,8 @@ static void send_event_to_zeitgeist(char *url_, char* text_, const char* ev_inte
            mimetype,
            text,
            ev_interpretation);
-  //zeitgeist_log_insert_events_no_reply (zg_log, event, NULL);  
+           
+  zeitgeist_log_insert_events_no_reply (zg_log, event, NULL);  
 }
 
 static int join_cb(char *word[], void *userdata)
@@ -110,6 +111,20 @@ static int message_cb(char *word[], void *userdata)
    return XCHAT_EAT_NONE;
 }
 
+static int priv_message_cb(char *word[], void *userdata)
+{
+   const char *server = xchat_get_info(ph, "host");
+   const char *channel = xchat_get_info(ph, "channel");
+   char *url, *text;
+   
+   url = g_strconcat("irc://", server, "/", channel, NULL);  
+   text = g_strconcat("You received a message from ", word[1], " in channel ", channel,": ", word[2], NULL);
+   
+   send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_RECEIVE_EVENT);
+
+   return XCHAT_EAT_NONE;
+}
+
 void xchat_plugin_get_info(char **name, char **desc, char **version, void **reserved)
 {
    *name = PNAME;
@@ -133,6 +148,7 @@ int xchat_plugin_init(xchat_plugin *plugin_handle,
 
    xchat_hook_print(ph, "You Join", XCHAT_PRI_NORM, join_cb, 0);
    xchat_hook_print(ph, "Your Message", XCHAT_PRI_NORM, message_cb, 0);
+   xchat_hook_print(ph, "Channel Msg Hilight", XCHAT_PRI_NORM, priv_message_cb, 0); 
    xchat_hook_server(ph, "PART", XCHAT_PRI_NORM, part_cb, 0);
 
    xchat_print(ph, "Zeitgeist plugin loaded\n");
