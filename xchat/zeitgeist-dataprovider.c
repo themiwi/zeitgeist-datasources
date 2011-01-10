@@ -59,12 +59,12 @@ static void send_event_to_zeitgeist(char *url_, char* text_, const char* ev_inte
         "net"),
   NULL);
 
-  g_debug ("URL: %s, origin: %s, mimeType: %s, text: %s, interpretation: %s",
+  /*g_debug ("URL: %s, origin: %s, mimeType: %s, text: %s, interpretation: %s",
            url,
            origin,
            mimetype,
            text,
-           ev_interpretation);
+           ev_interpretation);*/
            
   zeitgeist_log_insert_events_no_reply (zg_log, event, NULL);  
 }
