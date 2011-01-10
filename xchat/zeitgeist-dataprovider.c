@@ -9,7 +9,7 @@
  * General Public License as published by the Free Software Foundation; either
  * version 3 of the License, or (at your option) any later version.
  * 
- * Zeitgeist dataprovider for Chrome is distributed in the hope that
+ * Zeitgeist dataprovider for XChat is distributed in the hope that
  * it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
@@ -30,7 +30,7 @@
 static xchat_plugin    *ph       = NULL;   /* plugin handle */
 static ZeitgeistLog    *zg_log   = NULL;   /* Zeitgeist-daemon hanlde*/
 
-static void send_event_to_zeitgeist(char *url_, char* text_, int type)
+static void send_event_to_zeitgeist(char *url_, char* text_, const char* ev_interpretation)
 {
   /* type is 0 for PART event, 1 for JOIN event */
   const char *url, *origin, *mimetype, *text;
@@ -46,7 +46,7 @@ static void send_event_to_zeitgeist(char *url_, char* text_, int type)
   manifestation = ZEITGEIST_NFO_SOFTWARE_SERVICE;
            
   event = zeitgeist_event_new_full (
-      type ? ZEITGEIST_ZG_ACCESS_EVENT : ZEITGEIST_ZG_LEAVE_EVENT,
+      ev_interpretation,
       ZEITGEIST_ZG_USER_ACTIVITY,
       "application://xchat.desktop",
       zeitgeist_subject_new_full (
@@ -59,7 +59,13 @@ static void send_event_to_zeitgeist(char *url_, char* text_, int type)
         "net"),
   NULL);
 
-  zeitgeist_log_insert_events_no_reply (zg_log, event, NULL);  
+  g_debug ("URL: %s, origin: %s, mimeType: %s, text: %s, interpretation: %s",
+           url,
+           origin,
+           mimetype,
+           text,
+           ev_interpretation);
+  //zeitgeist_log_insert_events_no_reply (zg_log, event, NULL);  
 }
 
 static int join_cb(char *word[], void *userdata)
@@ -69,9 +75,9 @@ static int join_cb(char *word[], void *userdata)
    char *url, *text;
    
    url = g_strconcat("irc://", server, "/", channel, NULL);
-   text = g_strconcat("You join ", channel, NULL);
+   text = g_strconcat("You joined ", channel, NULL);
    
-   send_event_to_zeitgeist(url, text, 1);
+   send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_ACCESS_EVENT);
    
    return XCHAT_EAT_NONE;
 }
@@ -83,9 +89,23 @@ static int part_cb(char *word[], char* word_eol[], void *userdata)
    char *url, *text;
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat("You part from ", channel, NULL);
+   text = g_strconcat("You parted from ", channel, NULL);
    
-   send_event_to_zeitgeist(url, text, 0);
+   send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_LEAVE_EVENT);
+
+   return XCHAT_EAT_NONE;
+}
+
+static int message_cb(char *word[], void *userdata)
+{
+   const char *server = xchat_get_info(ph, "host");
+   const char *channel = xchat_get_info(ph, "channel");
+   char *url, *text;
+   
+   url = g_strconcat("irc://", server, "/", channel, NULL);  
+   text = g_strconcat("You sent a message in channel ", channel,": ", word[2], NULL);
+   
+   send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_SEND_EVENT);
 
    return XCHAT_EAT_NONE;
 }
@@ -112,6 +132,7 @@ int xchat_plugin_init(xchat_plugin *plugin_handle,
    zg_log = zeitgeist_log_new();
 
    xchat_hook_print(ph, "You Join", XCHAT_PRI_NORM, join_cb, 0);
+   xchat_hook_print(ph, "Your Message", XCHAT_PRI_NORM, message_cb, 0);
    xchat_hook_server(ph, "PART", XCHAT_PRI_NORM, part_cb, 0);
 
    xchat_print(ph, "Zeitgeist plugin loaded\n");
