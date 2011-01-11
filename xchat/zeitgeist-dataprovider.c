@@ -104,7 +104,7 @@ static int message_cb(char *word[], void *userdata)
    char *url, *text;
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat("You sent a message in channel ", channel,": ", word[2], NULL);
+   text = g_strconcat(channel, ": you sent a message: ", word[2], NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_SEND_EVENT);
 
@@ -118,7 +118,7 @@ static int priv_message_cb(char *word[], void *userdata)
    char *url, *text;
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat("You received a message from ", word[1], " in channel ", channel,": ", word[2], NULL);
+   text = g_strconcat(channel, ": you received a message from ", word[1],": ", word[2], NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_RECEIVE_EVENT);
 
