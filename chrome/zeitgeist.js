@@ -46,7 +46,9 @@ function onExtensionRequest (request, sender, sendResponse) {
 	sendAccessEvent(request);
 }
 
-plugin.setActor("application://google-chrome.desktop");
+var is_chromium = /chromium/.test( navigator.userAgent.toLowerCase() );
+if (!is_chromium) plugin.setActor("application://google-chrome.desktop");
+else plugin.setActor("application://chromium-browser.desktop");
 
 //chrome.extension.onConnect.addListener (onExtensionConnect);
 chrome.extension.onRequest.addListener (onExtensionRequest);
