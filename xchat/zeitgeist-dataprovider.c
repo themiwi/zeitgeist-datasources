@@ -28,7 +28,7 @@
 
 static xchat_plugin    *ph           = NULL;   /* plugin handle */
 static ZeitgeistLog    *zg_log       = NULL;   /* Zeitgeist-daemon hanlde*/
-static GSList          *channel_list = NULL; /* List of joined channels */
+static GSList          *channel_list = NULL;   /* List of joined channels */
 
 static void send_event_to_zeitgeist(char *url_, char* text_, const char* ev_interpretation)
 {
@@ -74,7 +74,7 @@ static int join_cb(char *word[], void *userdata)
    const char *channel = word[2];
    char *url, *text;
    
-   channel_list = g_slist_append(channel_list, g_strdup(channel));
+   channel_list = g_slist_prepend(channel_list, g_strdup(channel));
    
    url = g_strconcat("irc://", server, "/", channel, NULL);
    text = g_strconcat("You joined ", channel, NULL);
