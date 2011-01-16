@@ -46,7 +46,8 @@ try:
   from zeitgeist.client import ZeitgeistClient
   from zeitgeist.datamodel import Subject, Event, Interpretation, Manifestation
 
-  zeitgeistclient = ZeitgeistClient() if os.getuid() != 0 else None
+  precond = os.getuid() != 0 and os.getenv('DBUS_SESSION_BUS_ADDRESS') != None
+  zeitgeistclient = ZeitgeistClient() if precond else None
 except RuntimeError, e:
   zeitgeistclient = None
 except ImportError, e:
