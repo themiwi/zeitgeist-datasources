@@ -65,7 +65,7 @@ static void send_event_to_zeitgeist(char *url_, char* text_, const char* ev_inte
            text,
            ev_interpretation);*/
            
-  zeitgeist_log_insert_events_no_reply (zg_log, event, NULL);  
+  zeitgeist_log_insert_events_no_reply (zg_log, event, NULL);
 }
 
 static int join_cb(char *word[], void *userdata)
@@ -92,7 +92,6 @@ static int part_cb(char *word[], char* word_eol[], void *userdata)
    const char *server = xchat_get_info(ph, "host");
    const char *channel = word[3];
    char *url, *text;
-   gpointer data = NULL;
    GSList *tmp = channel_list;
   
    url = g_strconcat("irc://", server, "/", channel, NULL);  
@@ -104,10 +103,8 @@ static int part_cb(char *word[], char* word_eol[], void *userdata)
    {
       if (g_strcmp0 (tmp->data, channel) == 0)
       {
-         data = tmp->data;
-         channel_list = g_slist_remove(channel_list, data);
-         g_free(data);
-         data = NULL;
+         g_free(tmp->data);
+         channel_list = g_slist_remove(channel_list, tmp->data);
          break;
       }     
       tmp = tmp->next;
