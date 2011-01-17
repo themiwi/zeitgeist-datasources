@@ -81,6 +81,9 @@ static int join_cb(char *word[], void *userdata)
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_ACCESS_EVENT);
    
+   g_free(url);
+   g_free(text);
+   
    return XCHAT_EAT_NONE;
 }
 
@@ -89,13 +92,29 @@ static int part_cb(char *word[], char* word_eol[], void *userdata)
    const char *server = xchat_get_info(ph, "host");
    const char *channel = word[3];
    char *url, *text;
-   
-   channel_list = g_slist_remove(channel_list, g_strdup(channel));
-   
+   gpointer data = NULL;
+   GSList *tmp = channel_list;
+  
    url = g_strconcat("irc://", server, "/", channel, NULL);  
    text = g_strconcat("You parted from ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_LEAVE_EVENT);
+   
+   while(tmp)
+   {
+      if (g_strcmp0 (tmp->data, channel) == 0)
+      {
+         data = tmp->data;
+         channel_list = g_slist_remove(channel_list, data);
+         g_free(data);
+         data = NULL;
+         break;
+      }     
+      tmp = tmp->next;
+   }
+   
+   g_free(url);
+   g_free(text);
 
    return XCHAT_EAT_NONE;
 }
@@ -111,6 +130,9 @@ static int message_cb(char *word[], void *userdata)
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_SEND_EVENT);
 
+   g_free(url);
+   g_free(text);
+   
    return XCHAT_EAT_NONE;
 }
 
@@ -124,24 +146,26 @@ static int priv_message_cb(char *word[], void *userdata)
    text = g_strconcat(channel, ": you received \"", word[2],"\" from ", word[1], NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_RECEIVE_EVENT);
-
+   
+   g_free(url);
+   g_free(text);
+   
    return XCHAT_EAT_NONE;
 }
 
 static void on_quit(gpointer data, gpointer userdata)
 {
    const char *server = xchat_get_info(ph, "host");
-   char *channel = g_strdup((char*) data);
-   char *url, *text;
-   
-   channel_list = g_slist_remove(channel_list, channel);
+   const char *channel = (const char*) data;
+   char *url, *text;   
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
    text = g_strconcat("You parted from ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_LEAVE_EVENT);
    
-   g_free(channel);
+   g_free(url);
+   g_free(text);
 }
 
 void xchat_plugin_get_info(char **name, char **desc, char **version, void **reserved)
@@ -197,7 +221,7 @@ int xchat_plugin_deinit()
    }
    
    g_slist_foreach(channel_list, on_quit, NULL);
-     
+   g_slist_foreach(channel_list, (GFunc)g_free, NULL);
    g_slist_free(channel_list);
    channel_list = NULL;
    
