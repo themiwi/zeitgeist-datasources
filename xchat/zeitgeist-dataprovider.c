@@ -104,7 +104,7 @@ static int part_cb(char *word[], char* word_eol[], void *userdata)
       if (g_strcmp0 (tmp->data, channel) == 0)
       {
          g_free(tmp->data);
-         channel_list = g_slist_remove(channel_list, tmp->data);
+         channel_list = g_slist_delete_link(channel_list, tmp);
          break;
       }     
       tmp = tmp->next;
