@@ -22,17 +22,16 @@
 #include "xchat-plugin.h"
 #include <zeitgeist.h>
 
-
 #define PNAME "Zeitgeist"
 #define PDESC "Inform Zeitgeist about your activity"
 #define PVERSION "0.1"
 
-static xchat_plugin    *ph       = NULL;   /* plugin handle */
-static ZeitgeistLog    *zg_log   = NULL;   /* Zeitgeist-daemon hanlde*/
+static xchat_plugin    *ph           = NULL;   /* plugin handle */
+static ZeitgeistLog    *zg_log       = NULL;   /* Zeitgeist-daemon hanlde*/
+static GSList          *channel_list = NULL;   /* List of joined channels */
 
 static void send_event_to_zeitgeist(char *url_, char* text_, const char* ev_interpretation)
 {
-  /* type is 0 for PART event, 1 for JOIN event */
   const char *url, *origin, *mimetype, *text;
   const char *interpretation = NULL;
   const char *manifestation = NULL;
@@ -40,7 +39,7 @@ static void send_event_to_zeitgeist(char *url_, char* text_, const char* ev_inte
   
   url = url_;
   origin = url;
-  mimetype = "text/plain"; //?
+  mimetype = "text/plain";
   text = text_;
   interpretation = ZEITGEIST_NMO_IMMESSAGE;
   manifestation = ZEITGEIST_NFO_SOFTWARE_SERVICE;
@@ -66,7 +65,7 @@ static void send_event_to_zeitgeist(char *url_, char* text_, const char* ev_inte
            text,
            ev_interpretation);*/
            
-  zeitgeist_log_insert_events_no_reply (zg_log, event, NULL);  
+  zeitgeist_log_insert_events_no_reply (zg_log, event, NULL);
 }
 
 static int join_cb(char *word[], void *userdata)
@@ -75,10 +74,15 @@ static int join_cb(char *word[], void *userdata)
    const char *channel = word[2];
    char *url, *text;
    
+   channel_list = g_slist_prepend(channel_list, g_strdup(channel));
+   
    url = g_strconcat("irc://", server, "/", channel, NULL);
    text = g_strconcat("You joined ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_ACCESS_EVENT);
+   
+   g_free(url);
+   g_free(text);
    
    return XCHAT_EAT_NONE;
 }
@@ -88,11 +92,26 @@ static int part_cb(char *word[], char* word_eol[], void *userdata)
    const char *server = xchat_get_info(ph, "host");
    const char *channel = word[3];
    char *url, *text;
-   
+   GSList *tmp = channel_list;
+  
    url = g_strconcat("irc://", server, "/", channel, NULL);  
    text = g_strconcat("You parted from ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_LEAVE_EVENT);
+   
+   while(tmp)
+   {
+      if (g_strcmp0 (tmp->data, channel) == 0)
+      {
+         g_free(tmp->data);
+         channel_list = g_slist_delete_link(channel_list, tmp);
+         break;
+      }     
+      tmp = tmp->next;
+   }
+   
+   g_free(url);
+   g_free(text);
 
    return XCHAT_EAT_NONE;
 }
@@ -104,10 +123,13 @@ static int message_cb(char *word[], void *userdata)
    char *url, *text;
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat(channel, ": you sent a message: ", word[2], NULL);
+   text = g_strconcat(channel, ": you sent \"", word[2],"\".", NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_SEND_EVENT);
 
+   g_free(url);
+   g_free(text);
+   
    return XCHAT_EAT_NONE;
 }
 
@@ -118,11 +140,29 @@ static int priv_message_cb(char *word[], void *userdata)
    char *url, *text;
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat(channel, ": you received a message from ", word[1],": ", word[2], NULL);
+   text = g_strconcat(channel, ": you received \"", word[2],"\" from ", word[1], NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_RECEIVE_EVENT);
-
+   
+   g_free(url);
+   g_free(text);
+   
    return XCHAT_EAT_NONE;
+}
+
+static void on_quit(gpointer data, gpointer userdata)
+{
+   const char *server = xchat_get_info(ph, "host");
+   const char *channel = (const char*) data;
+   char *url, *text;   
+   
+   url = g_strconcat("irc://", server, "/", channel, NULL);  
+   text = g_strconcat("You parted from ", channel, NULL);
+   
+   send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_LEAVE_EVENT);
+   
+   g_free(url);
+   g_free(text);
 }
 
 void xchat_plugin_get_info(char **name, char **desc, char **version, void **reserved)
@@ -132,6 +172,9 @@ void xchat_plugin_get_info(char **name, char **desc, char **version, void **rese
    *version = PVERSION;
 }
 
+static int initialized = 0;
+static int reinit_tried = 0;
+
 int xchat_plugin_init(xchat_plugin *plugin_handle,
                       char **plugin_name,
                       char **plugin_desc,
@@ -139,6 +182,16 @@ int xchat_plugin_init(xchat_plugin *plugin_handle,
                       char *arg)
 {
    ph = plugin_handle;
+   
+   /* Block double initalization. */
+   if (initialized != 0) {
+      xchat_print(ph, "Zeitgeist plugin already loaded");
+      /* deinit is called even when init fails, so keep track
+       * of a reinit failure. */
+      reinit_tried++;
+      return 0;
+   }
+   initialized = 1;
 
    *plugin_name = PNAME;
    *plugin_desc = PDESC;
@@ -154,4 +207,22 @@ int xchat_plugin_init(xchat_plugin *plugin_handle,
    xchat_print(ph, "Zeitgeist plugin loaded\n");
 
    return 1;   
+}
+
+int xchat_plugin_deinit()
+{
+   /* A reinitialization was tried. Just give up */
+   if (reinit_tried) {
+      reinit_tried--;
+      return 1;
+   }
+   
+   g_slist_foreach(channel_list, on_quit, NULL);
+   g_slist_foreach(channel_list, (GFunc)g_free, NULL);
+   g_slist_free(channel_list);
+   channel_list = NULL;
+   
+   g_object_unref(zg_log);
+   zg_log = NULL;
+   return 1;
 }
