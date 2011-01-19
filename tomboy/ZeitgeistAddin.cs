@@ -3,6 +3,7 @@ using Tomboy;
 using System.Collections.Generic;
 using System.IO;
 using Zeitgeist.Datamodel;
+using Zeitgeist;
 
 namespace Tomboy.Zeitgeist
 {
@@ -11,6 +12,8 @@ namespace Tomboy.Zeitgeist
 		public ZeitgeistAddin ()
 		{
 			notesList = new List<NoteHandler>();
+			
+			dsReg = new DataSourceClient();
 		}
 		
 		#region Overridden methods
@@ -26,6 +29,23 @@ namespace Tomboy.Zeitgeist
 		public override void Initialize()
 		{
 			Console.WriteLine("Zg#: init new");
+			
+			Event ev = new Event();
+			ev.Actor = ZeitgeistAddin.TomboyUri;
+			Subject sub = new Subject();
+			sub.Interpretation = Interpretation.Instance.Document.Document;
+			sub.Manifestation = Manifestation.Instance.FileDataObject.FileDataObject;
+			ev.Subjects.Add(sub);
+			
+			try
+			{
+				dsReg.RegisterDataSources(tomboyDataSourceId, 
+			                          	tomboyDataSourceName, 
+			                          	tomboyDataSourceDesc , 
+			                          	new List<Event>(){ev});
+			}
+			catch(Exception)
+			{}
 			
 			// Initialize the handlers for hooking into Tomboy
 			InitHandlers();
@@ -78,11 +98,23 @@ namespace Tomboy.Zeitgeist
 		
 		private bool _init = false;
 		
-		#region Public Constants
+		private DataSourceClient dsReg; 
 		
+		#region Public Constants
+				
 		public const string TomboyUri = "application://tomboy.desktop";
 		
 		public const string NoteMimetype = "application/x-note";
+		
+		#endregion
+		
+		#region Private Constants
+		
+		private const string tomboyDataSourceId = "TomboyDatasource";
+		
+		private const string tomboyDataSourceName = "Tomboy Datasource";
+		
+		private const string tomboyDataSourceDesc = "This datasource pushes the 4 events for tomboy - Open/Close Note, Create/Delete Note";
 		
 		#endregion
 	}
