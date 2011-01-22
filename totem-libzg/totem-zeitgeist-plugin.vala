@@ -20,10 +20,13 @@ class ZeitgeistPlugin: Totem.Plugin {
   private ulong[] signals;
 
   private Zeitgeist.Log zg_log;
+  private Zeitgeist.DataSourceRegistry zg_registry;
   private unowned Totem.Object totem_object;
 
   public override bool activate (Totem.Object totem) throws GLib.Error {
     zg_log = new Zeitgeist.Log ();
+    zg_registry = new Zeitgeist.DataSourceRegistry ();
+
     totem_object = totem;
     current_media = MediaInfo ();
 
@@ -35,6 +38,19 @@ class ZeitgeistPlugin: Totem.Plugin {
                                        (Callback) metadata_changed, this);
     signals += Signal.connect_swapped (totem, "notify::playing",
                                        (Callback) playing_changed, this);
+
+    PtrArray templates = new PtrArray ();
+    var event = new Zeitgeist.Event.full ("", Zeitgeist.ZG_USER_ACTIVITY,
+                                          "application://totem.desktop", null);
+    templates.add (event);
+    var ds = new Zeitgeist.DataSource.full (
+      "org.gnome.Totem,dataprovider",
+      "Totem dataprovider",
+      "Logs access/leave events for media files played with Totem",
+      (owned) templates
+    );
+    zg_registry.register_data_source.begin (ds, null);
+
     return true;
   }
 
@@ -185,12 +201,7 @@ class ZeitgeistPlugin: Totem.Plugin {
              current_media.title,
              current_media.mimetype);
       */
-      string origin = "";
-      unowned string substr = current_media.mrl.rchr (-1, '/');
-      if (substr != null) {
-        size_t n = (char*)substr - (char*)current_media.mrl;
-        origin = current_media.mrl.ndup (n);
-      }
+      string origin = Path.get_dirname (current_media.mrl);
       var subject = new Zeitgeist.Subject.full (current_media.mrl,
                                                 current_media.interpretation,
                                                 Zeitgeist.NFO_FILE_DATA_OBJECT,
