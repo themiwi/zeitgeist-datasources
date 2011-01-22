@@ -110,7 +110,7 @@ namespace Tomboy.Zeitgeist
 		
 		#region Private Constants
 		
-		private const string tomboyDataSourceId = "TomboyDatasource";
+		private const string tomboyDataSourceId = "org.gnome.Tomboy,dataprovider";
 		
 		private const string tomboyDataSourceName = "Tomboy Datasource";
 		
