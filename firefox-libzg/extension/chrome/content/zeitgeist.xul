@@ -6,6 +6,8 @@
 
 		var enable_googlemail = false;
 		var googlemail_view_regex = new RegExp("mail\\.google\\.com");
+		var pbs = Components.classes["@mozilla.org/privatebrowsing;1"]
+			  .getService(Components.interfaces.nsIPrivateBrowsingService);
 
 		var debug = function (aMessage) {
 			var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
@@ -109,6 +111,8 @@
 		
 		var ZeitgeistProgressListener = {
 			onStateChange: function(aBrowser, aProgress, aRequest, aStateFlags) {
+                                var inPrivateBrowsingMode = pbs.privateBrowsingEnabled;
+                                if (!inPrivateBrowsingMode) {                               
 				if (aStateFlags & Components.interfaces.nsIWebProgressListener.STATE_STOP) {
 					var uri = aBrowser.currentURI.spec;
 					var mimetype = aBrowser.contentDocument.contentType;
@@ -135,7 +139,8 @@
 						}
 					}
 				}
-			},
+			}
+		},
 			// we don't implement this methods
 			onStatusChange: function(){},
 			onLocationChange: function(){},
