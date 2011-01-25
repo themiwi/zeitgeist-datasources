@@ -27,7 +27,7 @@ install-exec-hook:
 
 # we want to allow also local install
 EXTENSION_CONTENT = \
-	$(xul_ext_DATA) \
+	$(dist_xul_ext_DATA) \
 	defaults \
 	chrome \
 	components/libzeitgeist_xpcom.so \
