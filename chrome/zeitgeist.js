@@ -25,10 +25,17 @@ function onBookmarkCreated (bookmarkid, bookmark) {
 function sendAccessEvent (documentInfo, tabid) {
 	var url = documentInfo.url;
 	var origin = documentInfo.origin;
+	var domain = documentInfo.domain;
+	if (domain == null)
+	{
+		var s = url.split("/");
+		s[s.length-1] = '';
+		domain = s.join("/");
+	}
 	var mimetype = documentInfo.mimeType;
 	var title = documentInfo.title;
 	plugin.insertEvent(url,
-	                   origin ? origin : url,
+	                   domain,
 	                   mimetype ? mimetype : "text/html",
 	                   title);
 
@@ -42,10 +49,17 @@ function sendLeaveEvent (tabid) {
 
 	var url = documentInfo.url;
 	var origin = documentInfo.origin;
+	var domain = documentInfo.domain;
+	if (domain == null)
+	{
+		var s = url.split("/");
+		s[s.length-1] = '';
+		domain = s.join("/");
+	}
 	var mimetype = documentInfo.mimeType;
 	var title = documentInfo.title;
 	plugin.insertEvent(url,
-	                   origin ? origin : url,
+	                   domain,
 	                   mimetype ? mimetype : "text/html",
 	                   title,
 	                   plugin.LEAVE_EVENT);

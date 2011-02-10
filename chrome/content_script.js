@@ -22,9 +22,8 @@ function zgGetDocumentInfo () {
 		"title": document.title
 	};
 
-	// FIXME: do we want the referrer, or just use domain?
-	if (!document.referrer && document.domain) {
-		docInfo["origin"] = document.location.protocol + "//" + document.domain;
+	if (document.domain) {
+		docInfo["domain"] = document.location.protocol + "//" + document.domain;
 	}
 
 	var contentType = zgGetContentTypeFromHeader();
