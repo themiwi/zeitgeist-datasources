@@ -62,9 +62,10 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
   const char *url, *origin, *mimetype, *title;
   const char *interpretation = NULL;
   const char *manifestation = NULL;
+  const char *event_interpretation = NULL;
   ZeitgeistEvent *event;
 
-  if(argCount != 4 && argCount != 5)
+  if(argCount < 4 || argCount > 6)
   {
     npnfuncs->setexception(obj, "exception during invocation");
     return false;
@@ -87,7 +88,11 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
   title = NPVARIANT_TO_STRING (args[3]).UTF8Characters;
   if (argCount > 4)
   {
-    interpretation = NPVARIANT_TO_STRING (args[4]).UTF8Characters;
+    event_interpretation = NPVARIANT_TO_STRING (args[4]).UTF8Characters;
+  }
+  if (argCount > 5)
+  {
+    interpretation = NPVARIANT_TO_STRING (args[5]).UTF8Characters;
   }
   else
   {
@@ -106,7 +111,7 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
            interpretation);
 
   event = zeitgeist_event_new_full (
-      ZEITGEIST_ZG_ACCESS_EVENT,
+      event_interpretation ? event_interpretation : ZEITGEIST_ZG_ACCESS_EVENT,
       ZEITGEIST_ZG_USER_ACTIVITY,
       actor ? actor : "application://google-chrome.desktop",
       zeitgeist_subject_new_full (
@@ -190,6 +195,9 @@ hasProperty(NPObject *obj, NPIdentifier propertyName) {
     if (!strcmp(name, "MESSAGE")) return true;
     if (!strcmp(name, "VIDEO")) return true;
     if (!strcmp(name, "WEBSITE")) return true;
+
+    if (!strcmp(name, "ACCESS_EVENT")) return true;
+    if (!strcmp(name, "LEAVE_EVENT")) return true;
   }
   return false;
 }
@@ -221,6 +229,9 @@ getProperty(NPObject *obj, NPIdentifier propertyName, NPVariant *result) {
     INSTALL_CONSTANT("MESSAGE", ZEITGEIST_NMO_MESSAGE);
     INSTALL_CONSTANT("VIDEO", ZEITGEIST_NFO_VIDEO);
     INSTALL_CONSTANT("WEBSITE", ZEITGEIST_NFO_WEBSITE);
+
+    INSTALL_CONSTANT("ACCESS_EVENT", ZEITGEIST_ZG_ACCESS_EVENT);
+    INSTALL_CONSTANT("LEAVE_EVENT", ZEITGEIST_ZG_LEAVE_EVENT);
   }
 
   return false;

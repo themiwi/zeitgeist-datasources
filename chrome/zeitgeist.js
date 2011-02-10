@@ -1,11 +1,12 @@
 var plugin = document.embeds[0];
+var tabInfo = {};
 
 function onTabCreated (tab) {
 	chrome.tabs.executeScript(tab.id, {file: "content_script.js"});
 }
 
 function onTabRemoved (tabid) {
-	// TODO: unfocus event?
+	sendLeaveEvent(tabid);
 }
 
 function onTabUpdated (tabid, changeInfo, tab) {
@@ -18,10 +19,10 @@ function onBookmarkCreated (bookmarkid, bookmark) {
 	var url = bookmark.url;
 	var title = bookmark.title;
 	var mimetype = "text/html"; // FIXME: really? use XHR to get it?
-	plugin.insertEvent(url, url, mimetype, title, plugin.BOOKMARK);
+	plugin.insertEvent(url, url, mimetype, title, plugin.ACCESS_EVENT, plugin.BOOKMARK);
 }
 
-function sendAccessEvent (documentInfo) {
+function sendAccessEvent (documentInfo, tabid) {
 	var url = documentInfo.url;
 	var origin = documentInfo.origin;
 	var mimetype = documentInfo.mimeType;
@@ -30,27 +31,39 @@ function sendAccessEvent (documentInfo) {
 	                   origin ? origin : url,
 	                   mimetype ? mimetype : "text/html",
 	                   title);
+
+	documentInfo.sentAccess = true;
+	tabInfo[tabid] = documentInfo;
 }
 
-// yea, this worked in chrome 5
-function onExtensionConnect (port) {
-	port.onMessage.addListener(
-		function(message) {
-			sendAccessEvent(message);
-		}
-	);
+function sendLeaveEvent (tabid) {
+	var documentInfo = tabInfo[tabid];
+	if (documentInfo == null || documentInfo.sentAccess != true) return;
+
+	var url = documentInfo.url;
+	var origin = documentInfo.origin;
+	var mimetype = documentInfo.mimeType;
+	var title = documentInfo.title;
+	plugin.insertEvent(url,
+	                   origin ? origin : url,
+	                   mimetype ? mimetype : "text/html",
+	                   title,
+	                   plugin.LEAVE_EVENT);
+
+	tabInfo[tabid] = null;
 }
 
-// and this works in chrome 7
+// this works in chrome 7,8,9
 function onExtensionRequest (request, sender, sendResponse) {
-	sendAccessEvent(request);
+	var id = sender.tab.id;
+	sendLeaveEvent(id);
+	sendAccessEvent(request, id);
 }
 
 var is_chromium = /chromium/.test( navigator.userAgent.toLowerCase() );
 if (!is_chromium) plugin.setActor("application://google-chrome.desktop");
 else plugin.setActor("application://chromium-browser.desktop");
 
-//chrome.extension.onConnect.addListener (onExtensionConnect);
 chrome.extension.onRequest.addListener (onExtensionRequest);
 chrome.bookmarks.onCreated.addListener (onBookmarkCreated);
 chrome.tabs.onUpdated.addListener (onTabUpdated);
