@@ -174,7 +174,7 @@ for plugin in ${used_plugins}; do
 			PKG_CHECK_MODULES(TOMBOY_ADDINS, tomboy-addins,
                 HAS_TOMBOY_ADDINS=yes, HAS_TOMBOY_ADDINS=no)
 			PKG_CHECK_MODULES(GTK_SHARP, gtk-sharp-2.0, 
-				HAS_GTK_SHARP=yes, HAS_GTK_SHARP=no)
+				HAS_GTK_SHARP=yes, GTK_SHARP=no)
 			if test "${ENABLE_ZEITGEIST_SHARP}" = "no" ; then
 				plugin_error_or_ignore "zeitgeist-sharp package not found"
 				continue
