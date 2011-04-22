@@ -189,7 +189,7 @@ for plugin in ${used_plugins}; do
 				continue
 			fi
 			if test "x$XBUILD" = "xno"; then
-			  plugin_error_or_ignore "You need to install xbuild"
+			  plugin_error_or_ignore "You need to install xbuild for tomboy"
 				continue
 			fi
 			if test "x$GTK_SHARP" = "xno"; then
