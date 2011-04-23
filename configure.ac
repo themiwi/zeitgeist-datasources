@@ -128,6 +128,10 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "libzeitgeist not found"
 				continue
 			fi
+            if test "x$HAVE_GTK" = "xno"; then
+				plugin_error_or_ignore "You need to install gtk development headers"
+				continue
+            fi
 			PKG_CHECK_MODULES(GEANY, geany,
 				[HAVE_GEANY=yes], [HAVE_GEANY=no])
 			if test "${HAVE_GEANY}" != "yes" ; then
