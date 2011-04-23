@@ -1,4 +1,4 @@
-geanyplugindir = $(libdir)/geany/plugins
+geanyplugindir = $(libdir)/geany
 geanyplugin_LTLIBRARIES = zeitgeist_dataprovider.la
 
 zeitgeist_dataprovider_la_SOURCES = \
