@@ -65,7 +65,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_RESULT($all_plugins)
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany gedit rhythmbox vim emacs tomboy telepathy xchat"
+allowed_plugins="bzr chrome eog geany rhythmbox vim emacs tomboy telepathy xchat"
 # currently disabled = "epiphany firefox-libzg"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -278,10 +278,6 @@ if test "x${PLUGINS}" != "x" ; then
                                         	;;
                                         	tomboy)
                                         		AC_CONFIG_FILES([tomboy/Makefile])
-                                        		continue 2
-                                        	;;
-                                        	gedit)
-                                        		AC_CONFIG_FILES([gedit/Makefile])
                                         		continue 2
                                         	;;
                                         	rhythmbox)
