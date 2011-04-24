@@ -186,4 +186,6 @@
 (add-hook 'kill-emacs-hook  'zeitgeist-kill-emacs-hook)
 (add-hook 'before-save-hook 'zeitgeist-before-save-hook)
 
+(provide 'zeitgeist)
+
 ;;; zeitgeist.el ends here
