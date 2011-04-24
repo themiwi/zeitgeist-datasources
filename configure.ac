@@ -65,8 +65,8 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_RESULT($all_plugins)
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog firefox-libzg geany gedit rhythmbox totem-libzg vim emacs tomboy telepathy xchat"
-# currently disabled = "epiphany"
+allowed_plugins="bzr chrome eog geany gedit rhythmbox vim emacs tomboy telepathy xchat"
+# currently disabled = "epiphany firefox-libzg"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
 #   - see chrome's Makefile.am for how to compile it
@@ -202,26 +202,6 @@ for plugin in ${used_plugins}; do
 			fi
 			AC_SUBST(ZEITGEIST_SHARP_LIBS)
 		;;
-		totem*)
-			if test "${with_vala}" != "yes" ; then
-				plugin_error_or_ignore "you need vala installed to use the ${plugin} plugin"
-				continue
-			fi
-			if test "${HAVE_LIBZG}" != "yes" ; then
-				plugin_error_or_ignore "libzeitgeist not found"
-				continue
-			fi
-			if test "${HAVE_GTK}" != "yes" ; then
-				plugin_error_or_ignore "gtk+-2.0 not found"
-				continue
-			fi
-			PKG_CHECK_MODULES(TOTEM_PLPARSER, totem-plparser,
-				[HAVE_TOTEM_PLPARSER=yes], [HAVE_TOTEM_PLPARSER=no])
-			if test "${HAVE_TOTEM_PLPARSER}" != "yes" ; then
-				plugin_error_or_ignore "totem-plparser package not found"
-				continue
-			fi
-		;;
 		vim)
 		;;
 		emacs)
@@ -308,10 +288,6 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([rhythmbox/Makefile])
                                         		continue 2
                                         	;;
-                                        	totem-libzg)
-                                        		AC_CONFIG_FILES([totem-libzg/Makefile])
-                                        		continue 2
-                                        	;;
                                         	vim)
                                         		AC_CONFIG_FILES([vim/Makefile])
                                         		continue 2
@@ -324,7 +300,7 @@ if test "x${PLUGINS}" != "x" ; then
 												AC_CONFIG_FILES([telepathy/Makefile])
 												continue 2
 											;;
-						xchat)
+						                    xchat)
                                         		AC_CONFIG_FILES([xchat/Makefile])
                                         		continue 2
                                         	;;
