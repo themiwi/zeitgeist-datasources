@@ -8,7 +8,14 @@ namespace Tomboy.Zeitgeist
 {
 	public class ZeitgeistHandler
 	{
-		public static bool SendEvent(Note note, NameUri eventInterpretation)
+		public ZeitgeistHandler()
+		{
+			client = new LogClient();
+		}
+		
+        private LogClient client;
+		
+		public bool SendEvent(Note note, NameUri eventInterpretation)
 		{
 			NameUri eventManifestation = Manifestation.Instance.EventManifestation.UserActivity;
 			
@@ -40,9 +47,8 @@ namespace Tomboy.Zeitgeist
 			}
 		}
 		
-		private static void SendEvent(List<Event> e)
+		private void SendEvent(List<Event> e)
 		{
-			LogClient client = new LogClient();
 			client.InsertEvents(e);
 		}
 	}

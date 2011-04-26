@@ -14,7 +14,9 @@ namespace Tomboy.Zeitgeist
 			notesList = new List<NoteHandler>();
 			
 			dsReg = new DataSourceClient();
+			handler = new ZeitgeistHandler();
 		}
+
 		
 		#region Overridden methods
 		
@@ -66,7 +68,7 @@ namespace Tomboy.Zeitgeist
 			
 			foreach (Note note in Tomboy.DefaultNoteManager.Notes)
 			{
-				notesList.Add(new NoteHandler(note));
+				notesList.Add(new NoteHandler(note, handler));
 			}
 			
 			Tomboy.DefaultNoteManager.NoteAdded -= HandleNoteAdded;
@@ -81,9 +83,9 @@ namespace Tomboy.Zeitgeist
 			Console.WriteLine("Zg#: Note added: " + new_note.Title);
 			Console.WriteLine("\t" + new_note.Uri);
 			
-			notesList.Add(new NoteHandler(new_note));
+			notesList.Add(new NoteHandler(new_note, handler));
 			
-			ZeitgeistHandler.SendEvent(new_note, Interpretation.Instance.EventInterpretation.CreateEvent);
+			handler.SendEvent(new_note, Interpretation.Instance.EventInterpretation.CreateEvent);
 		}
 		
 		void HandleNoteDeleted(object sender, Note new_note)
@@ -91,7 +93,7 @@ namespace Tomboy.Zeitgeist
 			Console.WriteLine("Zg#: Note deleted: " + new_note.Title);
 			Console.WriteLine("\t" + new_note.Uri);
 			
-			ZeitgeistHandler.SendEvent(new_note, Interpretation.Instance.EventInterpretation.DeleteEvent);
+			handler.SendEvent(new_note, Interpretation.Instance.EventInterpretation.DeleteEvent);
 		}
 		
 		List<NoteHandler> notesList;
@@ -99,6 +101,8 @@ namespace Tomboy.Zeitgeist
 		private bool _init = false;
 		
 		private DataSourceClient dsReg; 
+		
+		private ZeitgeistHandler handler;
 		
 		#region Public Constants
 				

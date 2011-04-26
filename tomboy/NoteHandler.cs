@@ -6,13 +6,14 @@ namespace Tomboy.Zeitgeist
 {
 	public class NoteHandler
 	{
-		public NoteHandler(Note note)
+		public NoteHandler(Note note, ZeitgeistHandler handler)
 		{
 			// Check if the Note has already been processes.
 			// Whent he note is being processed, event handlers are attached to
 			if (handledNotes.Contains(note) == false)
 			{
 				this._note = note;
+				this._handler =  handler;
 				
 				note.Opened += HandleNoteOpened;
 				if (note.HasWindow)
@@ -41,7 +42,7 @@ namespace Tomboy.Zeitgeist
 		void HandleNoteRenamed (Note sender, string old_title)
 		{
 			Console.WriteLine("Zg#: Renamed: " + this._note.Title);
-			ZeitgeistHandler.SendEvent(sender, Interpretation.Instance.EventInterpretation.ModifyEvent);
+			this._handler.SendEvent(sender, Interpretation.Instance.EventInterpretation.ModifyEvent);
 		}
 		
 		void HandleNoteWindowShown (object sender, EventArgs e)
@@ -52,18 +53,20 @@ namespace Tomboy.Zeitgeist
 		void HandleNoteWindowShown ()
 		{
 			Console.WriteLine("Zg#: Note window opened: " + this._note.Title);
-			ZeitgeistHandler.SendEvent(this._note, Interpretation.Instance.EventInterpretation.AccessEvent);
+			this._handler.SendEvent(this._note, Interpretation.Instance.EventInterpretation.AccessEvent);
 		}
 		
 		void HandleNoteWindowHidden (object sender, EventArgs e)
 		{
 			Console.WriteLine("Zg#: Note window closed: " + this._note.Title);
-			ZeitgeistHandler.SendEvent(this._note, Interpretation.Instance.EventInterpretation.LeaveEvent);
+			this._handler.SendEvent(this._note, Interpretation.Instance.EventInterpretation.LeaveEvent);
 		}
 		
 		private Note _note;
 		
 		private static List<Note> handledNotes = new List<Note>();
+		
+		private ZeitgeistHandler _handler;
 	}
 }
 
