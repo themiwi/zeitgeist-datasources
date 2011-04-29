@@ -20,20 +20,31 @@
  */
  
  
-#include "nsIGenericFactory.h"
+#include "mozilla/ModuleUtils.h"
 #include "zeitgeist.h"
 #include "zeitgeistextend.h"
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(zeitgeistextend)
 
-static nsModuleComponentInfo components[] =
-{
-  {
-    ZEITGEIST_COMPONENT_CLASSNAME,
-    ZEITGEIST_COMPONENT_CID,
-    ZEITGEIST_COMPONENT_CONTRACTID,
-    zeitgeistextendConstructor,
-  }
+NS_DEFINE_NAMED_CID(ZEITGEIST_COMPONENT_CID);
+
+static const mozilla::Module::CIDEntry kZeitgeistCIDs[] = {
+  { &kZEITGEIST_COMPONENT_CID, false, NULL, zeitgeistextendConstructor },
+  { NULL }
 };
 
-NS_IMPL_NSGETMODULE("ZeitgeistModule", components)
+static const mozilla::Module::ContractIDEntry kZeitgeistContracts[] = {
+  { ZEITGEIST_COMPONENT_CONTRACTID, &kZEITGEIST_COMPONENT_CID },
+  { NULL }
+};
+
+static const mozilla::Module kZeitgeistModule = {
+  mozilla::Module::kVersion,
+  kZeitgeistCIDs,
+  kZeitgeistContracts,
+  NULL
+};
+
+NSMODULE_DEFN(ZeitgeistModule) = &kZeitgeistModule;
+
+NS_IMPL_MOZILLA192_NSGETMODULE(&kZeitgeistModule)
