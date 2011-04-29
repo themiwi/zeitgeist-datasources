@@ -259,10 +259,6 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([tomboy/Makefile])
                                         		continue 2
                                         	;;
-                                        	rhythmbox)
-                                        		AC_CONFIG_FILES([rhythmbox/Makefile])
-                                        		continue 2
-                                        	;;
                                         	vim)
                                         		AC_CONFIG_FILES([vim/Makefile])
                                         		continue 2
