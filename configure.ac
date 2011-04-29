@@ -65,8 +65,8 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany vim emacs tomboy telepathy xchat firefox-libzg"
-# currently disabled = "epiphany "
+allowed_plugins="bzr chrome eog geany vim emacs tomboy telepathy xchat"
+# currently disabled = "epiphany firefox-libzg "
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
 #   - see chrome's Makefile.am for how to compile it
