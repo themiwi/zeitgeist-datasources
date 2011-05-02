@@ -65,8 +65,8 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany vim emacs tomboy telepathy xchat"
-# currently disabled = "epiphany firefox-libzg "
+allowed_plugins="bzr chrome eog geany vim emacs tomboy telepathy xchat firefox-libzg"
+# currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
 #   - see chrome's Makefile.am for how to compile it
@@ -112,17 +112,17 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "libzeitgeist not found"
 				continue
 			fi
-			PKG_CHECK_MODULES(LIBXUL, libxul,
+			PKG_CHECK_MODULES(LIBXUL_2_0, libxul >= 2.0,
 				[HAVE_LIBXUL=yes], [HAVE_LIBXUL=no])
 			if test "${HAVE_LIBXUL}" != "yes" ; then
-				plugin_error_or_ignore "libxul not found"
+				plugin_error_or_ignore "libxul 2.0+ not found"
 				continue
 			fi
 			XPIDL_BIN="`$PKG_CONFIG --variable=sdkdir libxul`/bin/xpidl"
 			AC_SUBST(XPIDL_BIN)
 			XUL_IDLDIR="`$PKG_CONFIG --variable=idldir libxul`"
 			AC_SUBST(XUL_IDLDIR)
-            AC_DEFINE(MOZ_NO_MOZALLOC, ["For Mozilla Firefox 4"])
+                        AC_DEFINE(MOZ_NO_MOZALLOC, ["For Mozilla Firefox 4"])
 		;;
 		geany)
 			if test "${HAVE_LIBZG}" != "yes" ; then
