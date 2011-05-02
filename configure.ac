@@ -65,7 +65,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany vim emacs tomboy telepathy xchat firefox-40-libzg"
+allowed_plugins="bzr chrome eog geany vim emacs tomboy telepathy xchat firefox-40-libzg firefox-36-libzg"
 # currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -115,7 +115,7 @@ for plugin in ${used_plugins}; do
 			PKG_CHECK_MODULES(LIBXUL_2_0, libxul >= 2.0,
 				[HAVE_LIBXUL=yes], [HAVE_LIBXUL=no])
 			if test "${HAVE_LIBXUL}" != "yes" ; then
-				plugin_error_or_ignore "libxul 2.0+ not found"
+				plugin_error_or_ignore "libxul 2.0+ for firefox-40-libzg not found"
 				continue
 			fi
 			XPIDL_BIN="`$PKG_CONFIG --variable=sdkdir libxul`/bin/xpidl"
@@ -124,23 +124,37 @@ for plugin in ${used_plugins}; do
 			AC_SUBST(XUL_IDLDIR)
                         AC_DEFINE(MOZ_NO_MOZALLOC, ["For Mozilla Firefox 4"])
 		;;
+		firefox-36-libzg)
+			if test "${HAVE_LIBZG}" != "yes" ; then
+				plugin_error_or_ignore "libzeitgeist not found"
+				continue
+			fi
+			PKG_CHECK_MODULES(LIBXUL_1_92, libxul = 1.92,
+				[HAVE_LIBXUL=yes], [HAVE_LIBXUL=no])
+			if test "${HAVE_LIBXUL}" != "yes" ; then
+				plugin_error_or_ignore "libxul 1.92 for firefox-36-libzg not found"
+				continue
+			fi
+			XPIDL_BIN="`$PKG_CONFIG --variable=sdkdir libxul`/bin/xpidl"
+			AC_SUBST(XPIDL_BIN)
+			XUL_IDLDIR="`$PKG_CONFIG --variable=idldir libxul`"
+			AC_SUBST(XUL_IDLDIR)
+		;;
 		geany)
 			if test "${HAVE_LIBZG}" != "yes" ; then
 				plugin_error_or_ignore "libzeitgeist not found"
 				continue
 			fi
-            if test "x$HAVE_GTK" = "xno"; then
+        	        if test "x$HAVE_GTK" = "xno"; then
 				plugin_error_or_ignore "You need to install gtk development headers"
 				continue
-            fi
+	                fi
 			PKG_CHECK_MODULES(GEANY, geany,
 				[HAVE_GEANY=yes], [HAVE_GEANY=no])
 			if test "${HAVE_GEANY}" != "yes" ; then
 				plugin_error_or_ignore "geany not found"
 				continue
 			fi
-		;;
-		gedit)
 		;;
 		npapi-plugin)
 			if test "${HAVE_LIBZG}" != "yes" ; then
@@ -155,7 +169,7 @@ for plugin in ${used_plugins}; do
 			PKG_CHECK_MODULES(ZEITGEIST_SHARP, zeitgeist-sharp,
 				ENABLE_ZEITGEIST_SHARP=yes, ENABLE_ZEITGEIST_SHARP=no)
 			PKG_CHECK_MODULES(TOMBOY_ADDINS, tomboy-addins,
-                HAS_TOMBOY_ADDINS=yes, HAS_TOMBOY_ADDINS=no)
+               			 HAS_TOMBOY_ADDINS=yes, HAS_TOMBOY_ADDINS=no)
 			PKG_CHECK_MODULES(GTK_SHARP, gtk-sharp-2.0, 
 				HAS_GTK_SHARP=yes, GTK_SHARP=no)
 			if test "${ENABLE_ZEITGEIST_SHARP}" = "no" ; then
@@ -248,6 +262,14 @@ if test "x${PLUGINS}" != "x" ; then
                                         			firefox-40-libzg/Makefile
                                         			firefox-40-libzg/extension/Makefile
                                         			firefox-40-libzg/extension/components/Makefile
+                                        		])
+                                        		continue 2
+                                        	;;
+						firefox-36-libzg)
+                                        		AC_CONFIG_FILES([
+                                        			firefox-36-libzg/Makefile
+                                        			firefox-36-libzg/extension/Makefile
+                                        			firefox-36-libzg/extension/components/Makefile
                                         		])
                                         		continue 2
                                         	;;
