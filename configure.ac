@@ -65,7 +65,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany vim emacs tomboy telepathy xchat firefox-libzg"
+allowed_plugins="bzr chrome eog geany vim emacs tomboy telepathy xchat firefox-40-libzg"
 # currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -107,7 +107,7 @@ for plugin in ${used_plugins}; do
 			# not supported atm
 			continue
 		;;
-		firefox-libzg)
+		firefox-40-libzg)
 			if test "${HAVE_LIBZG}" != "yes" ; then
 				plugin_error_or_ignore "libzeitgeist not found"
 				continue
@@ -243,11 +243,11 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([eog/Makefile])
                                         		continue 2
                                         	;;
-                                        	firefox-libzg)
+                                        	firefox-40-libzg)
                                         		AC_CONFIG_FILES([
-                                        			firefox-libzg/Makefile
-                                        			firefox-libzg/extension/Makefile
-                                        			firefox-libzg/extension/components/Makefile
+                                        			firefox-40-libzg/Makefile
+                                        			firefox-40-libzg/extension/Makefile
+                                        			firefox-40-libzg/extension/components/Makefile
                                         		])
                                         		continue 2
                                         	;;
