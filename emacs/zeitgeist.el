@@ -1,6 +1,6 @@
 ;;; The Zeitgeist Emacs Script -- integrates Emacs with Zeitgeist.
 ;;; Copyright (C) 2010, Patrick M. Niedzielski <PatrickNiedzielski@gmail.com>
-;;; Copyright (C) 2011, tsdh <tassilo@member.fsf.org>
+;;; Copyright (C) 2011, Tassilo Horn <tassilo@member.fsf.org>
 ;;;
 ;;; This program is free software: you can redistribute it and/or modify
 ;;; it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 (defun zeitgeist-call (method &rest args)
   "Call the zeitgeist method METHOD with ARGS over dbus"
-  (apply 'dbus-call-method 
+  (apply 'dbus-call-method
     :session                            ; use the session (not system) bus
     "org.gnome.zeitgeist.Engine"        ; service name
     "/org/gnome/zeitgeist/log/activity" ; path name
@@ -35,7 +35,7 @@
   (let* ((now-time (current-time))
          (hi       (car now-time))
          (lo       (car (cdr now-time)))
-         (msecs    (car (cdr (cdr now-time))))) ; This is *micro*seconds. 
+         (msecs    (car (cdr (cdr now-time))))) ; This is *micro*seconds.
 
   (substring (number-to-string (+ (/ msecs 1000)
              (* (+ lo (* hi 65536.0))     1000))) 0 -2))) ; Convert system time to milliseconds.
