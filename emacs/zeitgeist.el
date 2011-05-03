@@ -1,5 +1,6 @@
 ;;; The Zeitgeist Emacs Script -- integrates Emacs with Zeitgeist.
 ;;; Copyright (C) 2010, Patrick M. Niedzielski <PatrickNiedzielski@gmail.com>
+;;; Copyright (C) 2011, tsdh <tassilo@member.fsf.org>
 ;;;
 ;;; This program is free software: you can redistribute it and/or modify
 ;;; it under the terms of the GNU General Public License as published by
@@ -119,20 +120,23 @@
   (let ((event-interpretation (zeitgeist-event-interpretation event)))
     (if (eq nil event-interpretation)
       (message "YOU FAIL")
-      (zeitgeist-call "InsertEvents"
-        (list (list :struct (list ""
-              (zeitgeist-event-timestamp)
-              event-interpretation
-              "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity"
-              "application://emacs23.desktop")
-        (list (list (concat "file://" fileurl)
-           "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Document"
-           "http://www.semanticdesktop.org/ontologies/nfo#FileDataObject"
-           (concat "file://" (file-name-directory fileurl))
-           filemime
-           (file-name-nondirectory (file-name-sans-versions fileurl))
-           "")) ; Some black magic later?
-        '(:array :byte 0)))))))
+      (condition-case err
+	  (zeitgeist-call
+	   "InsertEvents"
+	   (list (list :struct (list ""
+				     (zeitgeist-event-timestamp)
+				     event-interpretation
+				     "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity"
+				     "application://emacs23.desktop")
+		       (list (list (concat "file://" fileurl)
+				   "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Document"
+				   "http://www.semanticdesktop.org/ontologies/nfo#FileDataObject"
+				   (concat "file://" (file-name-directory fileurl))
+				   filemime
+				   (file-name-nondirectory (file-name-sans-versions fileurl))
+				   "")) ; Some black magic later?
+		       '(:array :byte 0))))
+	(error (message "ERROR (ZEITGEIST): %s" (cadr err)))))))
 
 (defun zeitgeist-open-file ()
   "Tell zeitgeist we opened a file!"
