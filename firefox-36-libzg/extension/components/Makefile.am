@@ -12,12 +12,12 @@ libzeitgeist_xpcom_la_SOURCES = \
 libzeitgeist_xpcom_la_CXXFLAGS = \
 	-include "xpcom-config.h" \
 	$(ZEITGEIST_CFLAGS) \
-	$(LIBXUL_1_92_LIBS) \
+	$(LIBXUL_1_9_2_CFLAGS) \
 	$(NULL)
 
 libzeitgeist_xpcom_la_LIBADD = \
 	$(ZEITGEIST_LIBS) \
-	$(LIBXUL_1_92_LIBS) \
+	$(LIBXUL_1_9_2_LIBS) \
 	$(NULL)
 
 libzeitgeist_xpcom_la_LDFLAGS = \

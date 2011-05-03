@@ -129,7 +129,7 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "libzeitgeist not found"
 				continue
 			fi
-			PKG_CHECK_MODULES(LIBXUL_1_92, libxul = 1.92,
+			PKG_CHECK_MODULES(LIBXUL_1_9_2, [libxul >= 1.9.2 libxul < 2.0],
 				[HAVE_LIBXUL=yes], [HAVE_LIBXUL=no])
 			if test "${HAVE_LIBXUL}" != "yes" ; then
 				plugin_error_or_ignore "libxul 1.92 for firefox-36-libzg not found"
