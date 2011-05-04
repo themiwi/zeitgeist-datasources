@@ -7,9 +7,9 @@ Create Dataprovider for:
 	* chromium
 	* universal GIO dataprovider
 	* anjuta
-	* banshee
+	* banshee - DONE
 	* brasero
-	* cheese
+	* cheese - Upstream waiting merge https://bugzilla.gnome.org/show_bug.cgi?id=627311
 	* eclipse
 	* f-spot
 	* gimp
