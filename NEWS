@@ -1,0 +1,42 @@
+2011-05-??: zeitgeist-dataproviders 0.8.0 "Indian Spices"
+------------------------------------------------------------
+
+Dataproviders present:
+
+* Bazaar - bzr
+* Chrome - chrome
+* Emacs - emacs
+* Eye of GNOME - eog
+* Firefox 3.6 - firefox-36-libzg
+* Firefox 4.0 - firefox-40-libzg
+* Geany - geany
+* Telepathy - telepathy
+* Tomboy - tomboy
+* Vim - vim
+* XChat - xchat
+
+Dataprovider present upstream:
+
+* totem - git.gnome.org/totem
+* edit - git.gnome.org/gedit
+* banshee - gitorious.org/banshee-community-extensions
+* rhythmbox - git.gnome.org/rhythmbox
+
+Bugs fixed:
+
+* Firefox Dataprovider does now wotk with FF 4.0. LP Bug #690594
+* Make for tomboy does not work. LP Bug #733653
+* Tomboy dataprovider doesn't register with DataSourceRegistry. LP Bug #691840
+* Geany datasource not picked up by Geany. LP Bug #690355
+* Geany fails to build even though it is enabled. LP Bug #769295
+
+Contributers:
+
+* Travis Glenn Hansen - For constant, consistent and patient 
+	testing and support. A BIG Thanks you Travis!
+* Tassilo Horn - Making Emacs dataprovider awesomer
+* tricote - for testing out Firefox 3.6 dataprovider. LP Bug #775817
+* Jon Nettleton - for the Firefox 4.0 patch. LP Bug #709103
+* Mark Jtully - For the updated Firefox 4.0 patch LP Bug #709103
+* Martin Dengler - for Emacs dataprovider. LP Bug #704934
+* glitsj16 - For geany dataprovider. LP Bug #690355
