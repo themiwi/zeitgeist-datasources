@@ -110,42 +110,76 @@
 
 (defun zeitgeist-event-interpretation (event)
   "Get the Event Interpretation of EVENT."
-  (cond
-   ((eq event 'zeitgeist-open-event)
-    "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#AccessEvent")
-   ((eq event 'zeitgeist-close-event)
-    "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#LeaveEvent")
-   ((eq event 'zeitgeist-create-event)
-    "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#CreateEvent")
-   ((eq event 'zeitgeist-modify-event)
-    "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#ModifyEvent")
-   (t nil)))
+  (case event
+    (zeitgeist-open-file-event
+     "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#AccessEvent")
+    (zeitgeist-close-file-event
+     "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#LeaveEvent")
+    (zeitgeist-create-file-event
+     "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#CreateEvent")
+    (zeitgeist-modify-file-event
+     "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#ModifyEvent")
+    (t (error "Unknown event %s" event))))
 
-(defun zeitgeist-send (event fileurl filemime)
-  "Send zeitgeist an event EVENT using the list FILEINFO."
+(defun zeitgeist-create-event (event-interpr uri subject-interpr subject-manifest
+					     origin mimetype text storage
+					     &optional payload)
+  "Create an event according to the InsertEvents signature."
+  (list
+   ;; Signature: asaasay
+   (list :struct
+	 ;; Event metadata (as = array of strings)
+	 (list
+	  ""                          ;; ID, must not be set by clients!
+	  (zeitgeist-event-timestamp) ;; Timpstamp
+	  event-interpr               ;; Event Interpretation (what happened?)
+	  ;; Manifestation
+	  "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity"
+	  ;; Actor (the application, aka emacs)
+	  "application://emacs23.desktop")
+	 ;; List of subjects (aas)
+	 (list
+	  (list
+     	   uri		   ;; The URI of the subject
+	   subject-interpr ;; Interpretation (Is the subject a file, a mail, a video?)
+	   subject-manifest ;; Manifestiation (Is the subject a local file, a web page?)
+	   origin           ;; Origin
+	   mimetype         ;; Mimetype
+	   text             ;; Subject text
+	   storage          ;; Storage
+	   ))
+	 ;; The payload (ay = array of bytes)
+	 (or payload '(:array :byte 0)))))
+
+(defun zeitgeist-send (event &rest props)
+  "Send zeitgeist the EVENT with PROPS."
   (let ((event-interpretation (zeitgeist-event-interpretation event)))
-    (if (eq nil event-interpretation)
-	(message "YOU FAIL")
-      (condition-case err
-	  (zeitgeist-call
-	   "InsertEvents"
-	   (list
-	    (list :struct
-		  (list ""
-			(zeitgeist-event-timestamp)
-			event-interpretation
-			"http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity"
-			"application://emacs23.desktop")
-		  (list
-		   (list (concat "file://" fileurl)
-			 "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Document"
-			 "http://www.semanticdesktop.org/ontologies/nfo#FileDataObject"
-			 (concat "file://" (file-name-directory fileurl))
-			 filemime
-			 (file-name-nondirectory (file-name-sans-versions fileurl))
-			 ""))		; Some black magic later?
-		  '(:array :byte 0))))
-	(error (message "ERROR (ZEITGEIST): %s" (cadr err)))))))
+    (condition-case err
+	(case event
+	  ;; File handling events
+	  ((zeitgeist-open-file-event
+	    zeitgeist-close-file-event
+	    zeitgeist-create-file-event
+	    zeitgeist-modify-file-event)
+	   (zeitgeist-call
+	    "InsertEvents"
+	    (zeitgeist-create-event
+	     event-interpretation
+	     (concat "file://" (plist-get props :file))
+	     "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Document"
+	     "http://www.semanticdesktop.org/ontologies/nfo#FileDataObject"
+	     (concat "file://" (file-name-directory (plist-get props :file)))
+	     (zeitgeist-get-mime-type)
+	     (file-name-nondirectory
+	      (file-name-sans-versions (plist-get props :file)))
+	     "")))
+	  ;; Email events
+	  ((zeitgeist-mail-read-event
+	    zeitgeist-mail-sent-event)
+	   ;; TODO: Implement me!
+	   ))
+      ;; Ouch, something failed when trying to communicate with zeitgeist!
+      (error (message "ERROR (ZEITGEIST): %s" (cadr err))))))
 
 ;;** Usual File Reading/Editing
 
@@ -153,28 +187,24 @@
   "Tell zeitgeist we opened a file!"
   (if (eq nil (buffer-file-name))
       (message "You are not on a file.")
-    (zeitgeist-send 'zeitgeist-open-event
-                    buffer-file-name
-                    (zeitgeist-get-mime-type))))
+    (zeitgeist-send 'zeitgeist-open-file-event
+                    :file buffer-file-name)))
 
 (defun zeitgeist-close-file ()
   "Tell zeitgeist we closed a file!"
   (when buffer-file-name
-    (zeitgeist-send 'zeitgeist-close-event
-                    buffer-file-name
-                    (zeitgeist-get-mime-type))))
+    (zeitgeist-send 'zeitgeist-close-file-event
+                    :file buffer-file-name)))
 
 (defun zeitgeist-create-file ()
   "Tell zeitgeist we created a file!"
-  (zeitgeist-send 'zeitgeist-create-event
-		  buffer-file-name
-		  (zeitgeist-get-mime-type)))
+  (zeitgeist-send 'zeitgeist-create-file-event
+		  :file buffer-file-name))
 
 (defun zeitgeist-modify-file ()
   "Tell zeitgeist we modified a file!"
-  (zeitgeist-send 'zeitgeist-modify-event
-		  buffer-file-name
-		  (zeitgeist-get-mime-type)))
+  (zeitgeist-send 'zeitgeist-modify-file-event
+		  :file buffer-file-name))
 
 (defun zeitgeist-find-file-hook ()
   "Call zeitgeist-open-file if the file exists."
@@ -209,6 +239,8 @@
 ;;** Record Reading/Writing Mail With Gnus
 
 ;; Hook run when mail is marked read: gnus-mark-article-hook
+
+;(defun zeitgeist-gnus-message-read ())
 
 ;; Hook run when a message is sent off: message-sent-hook
 
