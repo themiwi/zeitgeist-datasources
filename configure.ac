@@ -1,5 +1,5 @@
 AC_INIT([zeitgeist-dataproviders],
-	[0.1.0],
+	[0.8.0],
 	[https://bugs.launchpad.net/zeitgeist-dataproviders/])
 
 AC_PREFIX_DEFAULT([/usr])

@@ -7,7 +7,7 @@ Dataproviders present:
 * Chrome - chrome
 * Emacs - emacs
 * Eye of GNOME - eog
-* Firefox 3.6 - firefox-36-libzg
+* Firefox 3.6 - firefox-36-libzg (Not present in tarball but in repos)
 * Firefox 4.0 - firefox-40-libzg
 * Geany - geany
 * Telepathy - telepathy
