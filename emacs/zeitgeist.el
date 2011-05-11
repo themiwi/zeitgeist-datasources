@@ -26,12 +26,14 @@
 
 (defun zeitgeist-call (method &rest args)
   "Call the zeitgeist method METHOD with ARGS over dbus"
-  (apply 'dbus-call-method
-	 :session                            ; use the session (not system) bus
-	 "org.gnome.zeitgeist.Engine"        ; service name
-	 "/org/gnome/zeitgeist/log/activity" ; path name
-	 "org.gnome.zeitgeist.Log"           ; interface name
-	 method args))
+  (condition-case err
+	  (apply 'dbus-call-method
+		 :session                            ; use the session (not system) bus
+		 "org.gnome.zeitgeist.Engine"        ; service name
+		 "/org/gnome/zeitgeist/log/activity" ; path name
+		 "org.gnome.zeitgeist.Log"           ; interface name
+		 method args)
+  (dbus-error (message(format "zeitgeist-call %s failed due to D-Bus error %s" method err)))))
 
 (defun zeitgeist-event-timestamp ()
   "Get the timestamp in zeitgeist format."
