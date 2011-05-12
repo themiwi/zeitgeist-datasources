@@ -2,17 +2,26 @@
 "Author : Jonathan Lambrechts <jonathanlambrechts@gmail.com>
 "Installation : drop this file in a vim plugin folder ($HOME/.vim/plugin,/usr/share/vim/vim72/plugin, ...). Vim should be compiled with python enabled.
 
-function! ZeigtgeistLog(filename,use_id)
+function! ZeitgeistLog(filename, vim_use_id)
 python << endpython
+use_id = vim.eval("a:vim_use_id")
 filename = vim.eval("a:filename")
-if zeitgeistclient is not None and filename:
+precond = os.getuid() != 0 and os.getenv('DBUS_SESSION_BUS_ADDRESS') != None
+if got_zeitgeist and precond and filename:
+  # We reconnect on every attempt so that we cope cleanly with the zeitgeist
+  # server failing and being restarted; the Python client library will currently
+  # just throw away messages to a dead server (as of 2011-05-12).
+  zeitgeistclient = ZeitgeistClient()
   use = {
     "read" : Interpretation.ACCESS_EVENT,
     "new" : Interpretation.CREATE_EVENT,
-    "write" : Interpretation.MODIFY_EVENT} [vim.eval("a:use_id")]
+    "write" : Interpretation.MODIFY_EVENT} [use_id]
 
-  f = gio.File(filename)
   try:
+    f = gio.File(filename)
+  except gio.Error:
+    pass
+  else:
     fi = f.query_info(gio.FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE)
     uri = f.get_uri()
     mimetype = fi.get_content_type()
@@ -24,6 +33,7 @@ if zeitgeistclient is not None and filename:
       origin=unicode(uri.rpartition("/")[0]),
       mimetype=unicode(mimetype)
     )
+    # print "subject: %r" % subject
     event = Event.new_for_values(
       timestamp=int(time.time()*1000),
       interpretation=unicode(use),
@@ -31,9 +41,9 @@ if zeitgeistclient is not None and filename:
       actor="application://gvim.desktop",
       subjects=[subject,]
     )
+    # print "event: %r" % event
     zeitgeistclient.insert_event(event)
-  except RuntimeError, e:
-    pass
+    # print "insert done"
 endpython
 endfunction
 
@@ -45,17 +55,17 @@ try:
   import gio
   from zeitgeist.client import ZeitgeistClient
   from zeitgeist.datamodel import Subject, Event, Interpretation, Manifestation
-
-  precond = os.getuid() != 0 and os.getenv('DBUS_SESSION_BUS_ADDRESS') != None
-  zeitgeistclient = ZeitgeistClient() if precond else None
+  got_zeitgeist = True
 except RuntimeError, e:
-  zeitgeistclient = None
+  got_zeitgeist = False
 except ImportError, e:
-  zeitgeistclient = None
+  got_zeitgeist = False
 endpython
 augroup zeitgeist
 au!
-au BufRead * call ZeigtgeistLog (expand("%:p"), "read")
-au BufNewFile * call ZeigtgeistLog (expand("%:p"), "new")
-au BufWrite * call ZeigtgeistLog (expand("%:p"), "write")
+au BufRead * call ZeitgeistLog (expand("%:p"), "read")
+au BufNewFile * call ZeitgeistLog (expand("%:p"), "new")
+au BufWrite * call ZeitgeistLog (expand("%:p"), "write")
 augroup END
+
+" vim: sw=2
