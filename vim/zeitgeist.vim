@@ -19,12 +19,12 @@ if got_zeitgeist and precond and filename:
 
   try:
     f = gio.File(filename)
-  except gio.Error:
-    pass
-  else:
     fi = f.query_info(gio.FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE)
     uri = f.get_uri()
     mimetype = fi.get_content_type()
+  except gio.Error:
+    pass
+  else:
     subject = Subject.new_for_values(
       uri=unicode(uri),
       text=unicode(uri.rpartition("/")[2]),
