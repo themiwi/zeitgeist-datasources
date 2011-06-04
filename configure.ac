@@ -65,7 +65,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany gedit vim emacs tomboy telepathy xchat firefox-40-libzg firefox-36-libzg"
+allowed_plugins="bzr chrome eog geany gedit vim emacs tomboy telepathy xchat rhythmbox firefox-40-libzg totem-libzg firefox-36-libzg"
 # currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -104,6 +104,28 @@ for plugin in ${used_plugins}; do
 		eog)
 		;;
 		gedit)
+		;;
+		rhythmbox)
+		;;
+		rhythmbox-popular)
+			if test "${with_vala}" != "yes" ; then
+				plugin_error_or_ignore "you need vala installed to use the ${plugin} plugin"
+				continue
+			fi
+			if test "${HAVE_LIBZG}" != "yes" ; then
+				plugin_error_or_ignore "libzeitgeist not found"
+				continue
+			fi
+			if test "${HAVE_GTK}" != "yes" ; then
+				plugin_error_or_ignore "gtk+-2.0 not found"
+				continue
+			fi
+			PKG_CHECK_MODULES([LIBXML], [libxml-2.0],
+				[HAVE_LIBXML=yes], [HAVE_LIBXML=no])
+			if test "${HAVE_LIBXML}" != "yes" ; then
+				plugin_error_or_ignore "libxml package not found"
+				continue
+			fi
 		;;
 		epiphany)
 			# not supported atm
@@ -197,6 +219,26 @@ for plugin in ${used_plugins}; do
 			fi
 			AC_SUBST(ZEITGEIST_SHARP_LIBS)
 		;;
+		totem*)
+			if test "${with_vala}" != "yes" ; then
+				plugin_error_or_ignore "you need vala installed to use the ${plugin} plugin"
+				continue
+			fi
+			if test "${HAVE_LIBZG}" != "yes" ; then
+				plugin_error_or_ignore "libzeitgeist not found"
+				continue
+			fi
+			if test "${HAVE_GTK}" != "yes" ; then
+				plugin_error_or_ignore "gtk+-2.0 not found"
+				continue
+			fi
+			PKG_CHECK_MODULES(TOTEM_PLPARSER, totem-plparser,
+				[HAVE_TOTEM_PLPARSER=yes], [HAVE_TOTEM_PLPARSER=no])
+			if test "${HAVE_TOTEM_PLPARSER}" != "yes" ; then
+				plugin_error_or_ignore "totem-plparser package not found"
+				continue
+			fi
+		;;
 		vim)
 		;;
 		emacs)
@@ -285,6 +327,14 @@ if test "x${PLUGINS}" != "x" ; then
 						;;
                                         	tomboy)
                                         		AC_CONFIG_FILES([tomboy/Makefile])
+                                        		continue 2
+                                        	;;
+						rhythmbox)
+                                        		AC_CONFIG_FILES([rhythmbox/Makefile])
+                                        		continue 2
+						;;
+						totem-libzg)
+                                        		AC_CONFIG_FILES([totem-libzg/Makefile])
                                         		continue 2
                                         	;;
                                         	vim)
