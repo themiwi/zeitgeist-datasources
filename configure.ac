@@ -1,6 +1,6 @@
-AC_INIT([zeitgeist-dataproviders],
+AC_INIT([zeitgeist-datasources],
 	[0.8.0],
-	[https://bugs.launchpad.net/zeitgeist-dataproviders/])
+	[https://bugs.launchpad.net/zeitgeist-datasources/])
 
 AC_PREFIX_DEFAULT([/usr])
 
