@@ -1,4 +1,4 @@
-2011-05-??: zeitgeist-dataproviders 0.8.0 "Indian Spices"
+2011-06-??: zeitgeist-dataproviders 0.8.0 "Indian Spices"
 ------------------------------------------------------------
 
 Dataproviders present:
@@ -14,6 +14,9 @@ Dataproviders present:
 * Tomboy - tomboy
 * Vim - vim
 * XChat - xchat
+* Totem - totem-libzg
+* gedit - gedit
+* Rhythmbox - rhythmbox
 
 Dataprovider present upstream:
 
@@ -40,3 +43,4 @@ Contributers:
 * Mark Jtully - For the updated Firefox 4.0 patch LP Bug #709103
 * Martin Dengler - for Emacs dataprovider. LP Bug #704934
 * glitsj16 - For geany dataprovider. LP Bug #690355
+* Martin Pool - vim dataprovider
