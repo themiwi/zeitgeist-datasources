@@ -56,6 +56,7 @@ NS_IMETHODIMP zeitgeistextend::Insert(const char *url,
 {
 	ZeitgeistEvent		*event;
 	gchar				*title = NULL;
+	bool				local_file;
 
 	g_debug("zeitgeist start - creating event");
 
@@ -65,6 +66,10 @@ NS_IMETHODIMP zeitgeistextend::Insert(const char *url,
 		title = g_strndup (title_str.BeginReading (), title_len);
 	}
 
+	gchar **uri_parts = g_strsplit(url, "://", 2);
+	local_file = g_strcmp0 (uri_parts[0], "file") == 0;
+	g_strfreev(uri_parts);
+
 	event = zeitgeist_event_new_full (
 			ZEITGEIST_ZG_ACCESS_EVENT,
 			ZEITGEIST_ZG_USER_ACTIVITY,
@@ -72,7 +77,7 @@ NS_IMETHODIMP zeitgeistextend::Insert(const char *url,
 			zeitgeist_subject_new_full (
 				url,
 				ZEITGEIST_NFO_WEBSITE,
-				ZEITGEIST_NFO_REMOTE_DATA_OBJECT,
+				(local_file) ? ZEITGEIST_NFO_FILE_DATA_OBJECT : ZEITGEIST_NFO_REMOTE_DATA_OBJECT,
 				mimetype,
 				origin,
 				title,
