@@ -27,8 +27,8 @@ class NS_NO_VTABLE NS_SCRIPTABLE zeitgeist : public nsISupports {
 
   NS_DECLARE_STATIC_IID_ACCESSOR(ZEITGEIST_IID)
 
-  /* void insert (in string url, in string mimetype, in AUTF8String title); */
-  NS_SCRIPTABLE NS_IMETHOD Insert(const char *url, const char *mimetype, const nsACString & title) = 0;
+  /* void insert (in string url, in string mimetype, in AUTF8String title, in string origin); */
+  NS_SCRIPTABLE NS_IMETHOD Insert(const char *url, const char *mimetype, const nsACString & title, const char *origin) = 0;
 
 };
 
@@ -36,15 +36,15 @@ class NS_NO_VTABLE NS_SCRIPTABLE zeitgeist : public nsISupports {
 
 /* Use this macro when declaring classes that implement this interface. */
 #define NS_DECL_ZEITGEIST \
-  NS_SCRIPTABLE NS_IMETHOD Insert(const char *url, const char *mimetype, const nsACString & title); 
+  NS_SCRIPTABLE NS_IMETHOD Insert(const char *url, const char *mimetype, const nsACString & title, const char *origin); 
 
 /* Use this macro to declare functions that forward the behavior of this interface to another object. */
 #define NS_FORWARD_ZEITGEIST(_to) \
-  NS_SCRIPTABLE NS_IMETHOD Insert(const char *url, const char *mimetype, const nsACString & title) { return _to Insert(url, mimetype, title); } 
+  NS_SCRIPTABLE NS_IMETHOD Insert(const char *url, const char *mimetype, const nsACString & title, const char *origin) { return _to Insert(url, mimetype, title, origin); } 
 
 /* Use this macro to declare functions that forward the behavior of this interface to another object in a safe way. */
 #define NS_FORWARD_SAFE_ZEITGEIST(_to) \
-  NS_SCRIPTABLE NS_IMETHOD Insert(const char *url, const char *mimetype, const nsACString & title) { return !_to ? NS_ERROR_NULL_POINTER : _to->Insert(url, mimetype, title); } 
+  NS_SCRIPTABLE NS_IMETHOD Insert(const char *url, const char *mimetype, const nsACString & title, const char *origin) { return !_to ? NS_ERROR_NULL_POINTER : _to->Insert(url, mimetype, title, origin); } 
 
 #if 0
 /* Use the code below as a template for the implementation class for this interface. */
@@ -78,8 +78,8 @@ _MYCLASS_::~_MYCLASS_()
   /* destructor code */
 }
 
-/* void insert (in string url, in string mimetype, in AUTF8String title); */
-NS_IMETHODIMP _MYCLASS_::Insert(const char *url, const char *mimetype, const nsACString & title)
+/* void insert (in string url, in string mimetype, in AUTF8String title, in string origin); */
+NS_IMETHODIMP _MYCLASS_::Insert(const char *url, const char *mimetype, const nsACString & title, const char *origin)
 {
     return NS_ERROR_NOT_IMPLEMENTED;
 }

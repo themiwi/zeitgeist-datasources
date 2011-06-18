@@ -4,6 +4,8 @@
  *
  * Copyright (C) 2010 - Markus Korn <thekorn@gmx.de>
  * Copyright (C) 2010 - Michal Hruby <michal.mhr@gmail.com>
+ * Copyright (C) 2011 - Collabora Ltd.
+ *                      By Siegfried-A. Gevatter <siegfried@gevatter.com>
  *
  * zeitgeist dataprovider for firefox is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -49,7 +51,8 @@ zeitgeistextend::~zeitgeistextend()
 
 NS_IMETHODIMP zeitgeistextend::Insert(const char *url,
                                       const char *mimetype,
-                                      const nsACString &title_str)
+                                      const nsACString &title_str,
+                                      const char *origin)
 {
 	ZeitgeistEvent		*event;
 	gchar				*title = NULL;
@@ -71,7 +74,7 @@ NS_IMETHODIMP zeitgeistextend::Insert(const char *url,
 				ZEITGEIST_NFO_WEBSITE,
 				ZEITGEIST_NFO_REMOTE_DATA_OBJECT,
 				mimetype,
-				url,
+				origin,
 				title,
 				"net"),
 	NULL);

@@ -4,6 +4,8 @@
  *
  * Copyright (C) 2010 - Markus Korn <thekorn@gmx.de>
  * Copyright (C) 2010 - Michal Hruby <michal.mhr@gmail.com>
+ * Copyright (C) 2011 - Collabora Ltd.
+ *                      By Siegfried-A. Gevatter <siegfried@gevatter.com>
  *
  * zeitgeist dataprovider for firefox is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,6 +27,6 @@
 [scriptable, uuid(d879c08c-517d-44f0-83e1-3ef75a527ddf)]
 interface zeitgeist : nsISupports
 {
-	void		insert(in string url, in string mimetype, in AUTF8String title);
+	void		insert(in string url, in string mimetype, in AUTF8String title, in string origin);
 };
 

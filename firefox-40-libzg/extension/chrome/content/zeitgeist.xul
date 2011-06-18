@@ -117,10 +117,20 @@
 					var uri = aBrowser.currentURI.spec;
 					var mimetype = aBrowser.contentDocument.contentType;
 					if (aRequest.name == uri && !ignore_uri(uri)) {
+						var origin;
+						var parts = uri.split("://", 2);
+						if (parts[0] == "file") {
+							// Local file URI, we just trim it to directory in which the file is
+							origin = uri.substring(0, uri.lastIndexOf('/') + 1);
+						} else {
+							// HTTP(S), FTP or any other URI, we only take up to the domain name
+							origin = uri.substring(0, parts[0].length + 3 + parts[1].indexOf('/') + 1);
+						}
 						zeitgeistgluexpcominterface.insert(
 							uri,
 							mimetype,
-							aBrowser.contentTitle
+							aBrowser.contentTitle,
+							origin
 						);
 						//alert("THATS WHAT WE HAVE "+enable_googlemail+" | "+uri+" | "+(enable_googlemail & googlemail_view_regex.test(uri)));
 						if (enable_googlemail & googlemail_view_regex.test(uri)) {
@@ -132,7 +142,8 @@
 									zeitgeistgluexpcominterface.insert(
 										dmt.location.href,
 										dmt.contentType,
-										dmt.title
+										dmt.title,
+										"http://mail.google.com/"
 									);
 								};
 							}, false);
