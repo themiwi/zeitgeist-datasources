@@ -77,7 +77,7 @@ static int join_cb(char *word[], void *userdata)
    channel_list = g_slist_prepend(channel_list, g_strdup(channel));
    
    url = g_strconcat("irc://", server, "/", channel, NULL);
-   text = g_strconcat("You joined ", channel, NULL);
+   text = g_strconcat("IRC ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_ACCESS_EVENT);
    
@@ -95,7 +95,7 @@ static int part_cb(char *word[], char* word_eol[], void *userdata)
    GSList *tmp = channel_list;
   
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat("You parted from ", channel, NULL);
+   text = g_strconcat("IRC ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_LEAVE_EVENT);
    
@@ -123,7 +123,7 @@ static int message_cb(char *word[], void *userdata)
    char *url, *text;
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat("You sent a message to :", word[2],"\".", NULL);
+   text = g_strconcat("IRC ", word[2],"\".", NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_SEND_EVENT);
 
@@ -140,7 +140,7 @@ static int priv_message_cb(char *word[], void *userdata)
    char *url, *text;
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat("You received a message from: ", word[1], NULL);
+   text = g_strconcat("IRC ", word[1], NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_RECEIVE_EVENT);
    
@@ -157,7 +157,7 @@ static void on_quit(gpointer data, gpointer userdata)
    char *url, *text;   
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat("You parted from ", channel, NULL);
+   text = g_strconcat("IRC ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_LEAVE_EVENT);
    
