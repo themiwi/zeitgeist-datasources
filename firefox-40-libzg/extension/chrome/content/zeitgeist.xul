@@ -124,7 +124,7 @@
 							origin = uri.substring(0, uri.lastIndexOf('/') + 1);
 						} else {
 							// HTTP(S), FTP or any other URI, we only take up to the domain name
-							origin = uri.substring(0, parts[0].length + 3 + parts[1].indexOf('/') + 1);
+							origin = parts[0] + "://" + parts[1].split("/")[0] + "/";
 						}
 						zeitgeistgluexpcominterface.insert(
 							uri,
