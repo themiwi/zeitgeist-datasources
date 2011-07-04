@@ -59,10 +59,11 @@ static bool
 invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
   /* args should be: url, origin, mimetype, title, [interpretation] */
-  const char *url, *origin, *mimetype, *title;
-  const char *interpretation = NULL;
+  char *url, *origin, *mimetype, *title;
+  char *interpretation = NULL;
   const char *manifestation = NULL;
-  const char *event_interpretation = NULL;
+  char *event_interpretation = NULL;
+  const NPString *np_s;
   ZeitgeistEvent *event;
 
   if(argCount < 4 || argCount > 6)
@@ -81,22 +82,27 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
     }
   }
 
-
-  url = NPVARIANT_TO_STRING (args[0]).UTF8Characters;
-  origin = NPVARIANT_TO_STRING (args[1]).UTF8Characters;
-  mimetype = NPVARIANT_TO_STRING (args[2]).UTF8Characters;
-  title = NPVARIANT_TO_STRING (args[3]).UTF8Characters;
+  np_s = &NPVARIANT_TO_STRING (args[0]);
+  url = g_strndup (np_s->UTF8Characters, np_s->UTF8Length);
+  np_s = &NPVARIANT_TO_STRING (args[1]);
+  origin = g_strndup (np_s->UTF8Characters, np_s->UTF8Length);
+  np_s = &NPVARIANT_TO_STRING (args[2]);
+  mimetype = g_strndup (np_s->UTF8Characters, np_s->UTF8Length);
+  np_s = &NPVARIANT_TO_STRING (args[3]);
+  title = g_strndup (np_s->UTF8Characters, np_s->UTF8Length);
   if (argCount > 4)
   {
-    event_interpretation = NPVARIANT_TO_STRING (args[4]).UTF8Characters;
+    np_s = &NPVARIANT_TO_STRING (args[4]);
+    event_interpretation = g_strndup (np_s->UTF8Characters, np_s->UTF8Length);
   }
   if (argCount > 5)
   {
-    interpretation = NPVARIANT_TO_STRING (args[5]).UTF8Characters;
+    np_s = &NPVARIANT_TO_STRING (args[5]);
+    interpretation = g_strndup (np_s->UTF8Characters, np_s->UTF8Length);
   }
   else
   {
-    interpretation = ZEITGEIST_NFO_WEBSITE;
+    interpretation = g_strdup (ZEITGEIST_NFO_WEBSITE);
   }
 
   // determine manifestation from url
@@ -128,6 +134,13 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
 
   VOID_TO_NPVARIANT (*result);
   
+  g_free (url);
+  g_free (origin);
+  g_free (mimetype);
+  g_free (title);
+  g_free (interpretation);
+  g_free (event_interpretation);
+
   return true;
 }
 
