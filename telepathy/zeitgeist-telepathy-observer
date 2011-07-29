@@ -97,7 +97,7 @@ class ZConnection(gobject.GObject, telepathy.client.Connection):
                 'ContactAttributeInterfaces',
                 reply_handler=interfaces,
                 error_handler=error)
-        
+
         self.signals.append(self[CONNECTION].connect_to_signal(
             'StatusChanged', self._status_changed))
 
@@ -118,7 +118,7 @@ class ZChannel(gobject.GObject, telepathy.client.Channel):
     properties: Properties of the channel we're proxying, from ObserveChannels
     ready_handler: Callback function run once we're done setting up object
     """
-    __gsignals__ = { 
+    __gsignals__ = {
             'closed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
             }
 
@@ -159,7 +159,7 @@ class ZChannel(gobject.GObject, telepathy.client.Channel):
                     '/alias']
         except KeyError:
             self._target_alias = self._target_id
-        
+
         self._connect_to_signals()
         self._default_operations_finished()
 
@@ -182,14 +182,14 @@ class ZChannel(gobject.GObject, telepathy.client.Channel):
 
     def _connect_to_signals(self):
         # Connect to signals
-        self.signals.append(self[CHANNEL].connect_to_signal('Closed', 
+        self.signals.append(self[CHANNEL].connect_to_signal('Closed',
                 self._channel_closed_cb))
 
     # Called when channel proxy becomes ready. Chains method calls so actions
     # which depend on each other are executed in order.
     def _channel_ready(self, channel):
         self._target_id = self.properties[CHANNEL + '.TargetID']
-        
+
         # Get contact attribute interfaces
         self[dbus.PROPERTIES_IFACE].Get(CHANNEL,
                 'Requested',
@@ -217,7 +217,7 @@ class ZTextChannel(ZChannel):
         # Report to zeitgeist
         if not self._subject:
             self._subject = [Subject.new_for_values(
-                uri = self._target_id,
+                uri = "telepathy://" + self.account_path + "/" + self._target_id,
                 interpretation = unicode(Interpretation.IMMESSAGE),
                 manifestation = unicode(Manifestation.SOFTWARE_SERVICE),
                 origin = self.account_path,
@@ -258,7 +258,7 @@ class ZTextChannel(ZChannel):
     def _get_pending_messages_cb(self, messages):
         for message in messages:
             self._message_received_cb(*message)
-            
+
         self._release_channel()
 
     def _default_operations_finished(self):
@@ -272,13 +272,13 @@ class ZTextChannel(ZChannel):
         logging.debug("Message received")
         if not self._subject:
             self._subject = [Subject.new_for_values(
-                uri = self._target_id,
+                uri = "telepathy://" + self.account_path + "/" + self._target_id,
                 interpretation = unicode(Interpretation.IMMESSAGE),
                 manifestation = unicode(Manifestation.SOFTWARE_SERVICE),
                 origin = self.account_path,
                 mimetype = "text/plain",
                 text = self._target_alias)]
-        
+
         timestamp = timestamp * 1000
 
         event = Event.new_for_values(
@@ -308,7 +308,7 @@ class ZTextChannel(ZChannel):
                 self._message_sent_cb))
         self.signals.append(self[CHANNEL_TYPE_TEXT].connect_to_signal('Received',
                 self._message_received_cb))
-        self.signals.append(self[CHANNEL].connect_to_signal('Closed', 
+        self.signals.append(self[CHANNEL].connect_to_signal('Closed',
                 self._channel_closed_cb))
 
 class ZStreamedMediaChannel(ZChannel):
@@ -335,7 +335,7 @@ class ZStreamedMediaChannel(ZChannel):
 
         if not self._audio_subject:
             self._audio_subject = [Subject.new_for_values(
-                uri = self._target_id,
+                uri = "telepathy://" + self.account_path + "/" + self._target_id,
                 interpretation = unicode(Interpretation.AUDIO),
                 manifestation = unicode(Manifestation.MEDIA_STREAM),
                 origin = self.account_path,
@@ -344,7 +344,7 @@ class ZStreamedMediaChannel(ZChannel):
 
         if not self._video_subject:
             self._video_subject = [Subject.new_for_values(
-                uri = self._target_id,
+                uri = "telepathy://" + self.account_path + "/" + self._target_id,
                 interpretation = unicode(Interpretation.VIDEO),
                 manifestation = unicode(Manifestation.MEDIA_STREAM),
                 origin = self.account_path,
@@ -408,7 +408,7 @@ class ZStreamedMediaChannel(ZChannel):
                 self._stream_added_cb))
         self.signals.append(self[CHANNEL_TYPE_STREAMED_MEDIA].connect_to_signal('StreamRemoved',
                 self._stream_removed_cb))
-        self.signals.append(self[CHANNEL].connect_to_signal('Closed', 
+        self.signals.append(self[CHANNEL].connect_to_signal('Closed',
                 self._channel_closed_cb))
 
 class ZObserver(telepathy.server.Observer,
@@ -456,13 +456,13 @@ class ZObserver(telepathy.server.Observer,
             'ObserverChannelFilter': lambda: filter_array})
 
         self.connection_cache = {}
-        self.channel_cache = {} 
+        self.channel_cache = {}
 
     # Set async callbacks so ObserveChannels won't return until we're finished
     @dbus.service.method(CLIENT_OBSERVER,
         in_signature='ooa(oa{sv})oaoa{sv}', out_signature='',
         async_callbacks=('_success', '_error'))
-    def ObserveChannels(self, account, conn, channels, dispatch_operation, 
+    def ObserveChannels(self, account, conn, channels, dispatch_operation,
             requests_satisfied, observer_info, _success, _error):
 
         # List of channels we're waiting to finish before we release the bus
@@ -487,20 +487,20 @@ class ZObserver(telepathy.server.Observer,
 
         # Called when the channel proxy is invalidated
         def channel_closed(chan):
-            try: 
+            try:
                 del self.channel_cache[chan.object_path]
                 logging.debug("Channel closed: %s" % chan)
             except:
                 logging.error("Couldn't delete channel: %s" % chan)
 
-            # No more channels means we aren't needed. 
+            # No more channels means we aren't needed.
             # Telepathy will restart us when we are
             if not self.channel_cache:
                 logging.warning("No channels left in list. Exiting")
                 sys.exit()
 
         # Called when ZChannel object has finished its tasks
-        # Removes channel from pending queue, and releases the connection 
+        # Removes channel from pending queue, and releases the connection
         # if all channeled have been processed
         def channel_ready(chan):
             logging.debug("Channel ready: %s" % chan)
