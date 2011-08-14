@@ -147,7 +147,7 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
 static bool
 invokeSetActor (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
-  const char *actorName;
+  const NPString *np_s;
 
   if(argCount != 1 || !NPVARIANT_IS_STRING (args[0]))
   {
@@ -155,14 +155,14 @@ invokeSetActor (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVaria
     return false;
   }
 
-  actorName = NPVARIANT_TO_STRING (args[0]).UTF8Characters;
-  g_debug ("setting actor to: \"%s\"", actorName);
+  np_s = &NPVARIANT_TO_STRING (args[0]);
   
   if (actor)
   {
     g_free(actor);
   }
-  actor = g_strdup (actorName);
+  actor = g_strndup (np_s->UTF8Characters, np_s->UTF8Length);
+  g_debug ("actor set to: \"%s\"", actor);
 
   VOID_TO_NPVARIANT (*result);
   
