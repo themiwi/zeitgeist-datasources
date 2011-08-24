@@ -65,8 +65,8 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany gedit vim emacs tomboy telepathy xchat rhythmbox firefox-40-libzg totem-libzg firefox-36-libzg"
-# currently disabled = "epiphany"
+allowed_plugins="bzr chrome eog geany gedit vim emacs tomboy telepathy xchat rhythmbox firefox totem-libzg firefox-36-libzg"
+# currently disabled = "epiphany firefox-40-libzg"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
 #   - see chrome's Makefile.am for how to compile it
@@ -130,6 +130,8 @@ for plugin in ${used_plugins}; do
 		epiphany)
 			# not supported atm
 			continue
+		;;
+		firefox)
 		;;
 		firefox-40-libzg)
 			if test "${HAVE_LIBZG}" != "yes" ; then
@@ -301,6 +303,13 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([eog/Makefile])
                                         		continue 2
                                         	;;
+                                        	firefox)
+												AC_CONFIG_FILES([
+													firefox/Makefile
+													firefox/extension/Makefile
+												])
+												continue 2
+											;;
                                         	firefox-40-libzg)
                                         		AC_CONFIG_FILES([
                                         			firefox-40-libzg/Makefile
@@ -309,7 +318,7 @@ if test "x${PLUGINS}" != "x" ; then
                                         		])
                                         		continue 2
                                         	;;
-						firefox-36-libzg)
+											firefox-36-libzg)
                                         		AC_CONFIG_FILES([
                                         			firefox-36-libzg/Makefile
                                         			firefox-36-libzg/extension/Makefile
@@ -321,19 +330,19 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([geany/Makefile])
                                         		continue 2
                                         	;;
-						gedit)
+											gedit)
                                         		AC_CONFIG_FILES([gedit/Makefile])
                                         		continue 2
-						;;
+											;;
                                         	tomboy)
                                         		AC_CONFIG_FILES([tomboy/Makefile])
                                         		continue 2
                                         	;;
-						rhythmbox)
+											rhythmbox)
                                         		AC_CONFIG_FILES([rhythmbox/Makefile])
                                         		continue 2
-						;;
-						totem-libzg)
+											;;
+											totem-libzg)
                                         		AC_CONFIG_FILES([totem-libzg/Makefile])
                                         		continue 2
                                         	;;
