@@ -23,6 +23,7 @@ Requires bzr 0.15 or higher.
 
 Copyright (C) 2009, Markus Korn <thekorn@gmx.de>
 Copyright (C) 2010, Stefano Candori <stefano.candori@gmail.com>
+Copyright (C) 2011, Jelmer Vernooij <jelmer@samba.org>
 Published under the GNU GPLv2 or later
 
 Installation:
@@ -30,28 +31,37 @@ Copy this directory to ~/.bazaar/plugins/zeitgeist/*
 """
 
 import time
-import logging
-from bzrlib import branch
+from bzrlib import (
+    branch,
+    trace,
+    )
 
-logging.basicConfig(filename="/dev/null")
+_client = None
+_client_checked = None
 
-install_hook = True
-CLIENT = None
-
-try:
-    from zeitgeist.client import ZeitgeistClient
-    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
-except ImportError:
-    install_hook = False
-else:
+def get_client():
+    global _client_checked, _client
+    if _client_checked:
+        return _client
+    _client_checked = True
     try:
-        CLIENT = ZeitgeistClient()
+        from zeitgeist.client import ZeitgeistClient
+    except ImportError:
+        _client = None
     except RuntimeError, e:
-        print "Unable to connect to Zeitgeist, won't send events. Reason: '%s'" %e
-        install_hook = False
+        trace.info("Unable to connect to Zeitgeist, won't send events."
+                   "Reason: '%s'" % e)
+        _client = None
+    else:
+        _client = ZeitgeistClient()
+    return _client
 
 
 def post_commit(local, master, old_revno, old_revid, new_revno, new_revid):
+    client = get_client()
+    if client is None:
+        return
+    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
     revision = master.repository.get_revision(new_revid)
     if new_revno == 1:
         interpretation = Interpretation.CREATE_EVENT
@@ -77,9 +87,14 @@ def post_commit(local, master, old_revno, old_revid, new_revno, new_revid):
         actor="application://bzr.desktop", #something usefull here, always olive-gtk?
         subjects=[subject,]
     )
-    CLIENT.insert_event(event)
+    client.insert_event(event)
+
 
 def post_pull(pull_result):
+    client = get_client()
+    if client is None:
+        return
+    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
     master = pull_result.master_branch
     revision = master.repository.get_revision(pull_result.new_revid)
     interpretation = Interpretation.RECEIVE_EVENT
@@ -102,10 +117,10 @@ def post_pull(pull_result):
         actor="application://bzr.desktop", #something usefull here, always olive-gtk?
         subjects=[subject,]
     )
-    CLIENT.insert_event(event)
+    client.insert_event(event)
 
-if install_hook:
-    branch.Branch.hooks.install_named_hook("post_commit", post_commit,
-                                           "Zeitgeist dataprovider for bzr")
-    branch.Branch.hooks.install_named_hook("post_pull", post_pull,
-                                           "Zeitgeist dataprovider for bzr")
+
+branch.Branch.hooks.install_named_hook("post_commit", post_commit,
+                                       "Zeitgeist dataprovider for bzr")
+branch.Branch.hooks.install_named_hook("post_pull", post_pull,
+                                       "Zeitgeist dataprovider for bzr")
