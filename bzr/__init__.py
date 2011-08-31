@@ -48,12 +48,17 @@ def get_client():
         from zeitgeist.client import ZeitgeistClient
     except ImportError:
         _client = None
-    except RuntimeError, e:
-        trace.info("Unable to connect to Zeitgeist, won't send events."
-                   "Reason: '%s'" % e)
-        _client = None
-    else:
+        return _client
+    import dbus
+    try:
         _client = ZeitgeistClient()
+    except dbus.DBusException, e:
+        trace.warning("zeitgeist: %s. No events will be sent." % e.message)
+        _client = None
+    except Exception, e:
+        trace.warning("Unable to connect to Zeitgeist, won't send events. "
+                      "Reason: '%s'" % e)
+        _client = None
     return _client
 
 
