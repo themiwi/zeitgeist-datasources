@@ -1,4 +1,0 @@
-binary-component	components/libzeitgeist_xpcom.so
-interfaces	components/zeitgeist.xpt
-content		zeitgeist				chrome/content/
-overlay		chrome://browser/content/browser.xul	chrome://zeitgeist/content/zeitgeist.xul

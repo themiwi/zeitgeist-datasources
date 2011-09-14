@@ -1,5 +1,5 @@
 AC_INIT([zeitgeist-datasources],
-	[0.8.0],
+	[0.8.1],
 	[https://bugs.launchpad.net/zeitgeist-datasources/])
 
 AC_PREFIX_DEFAULT([/usr])
@@ -45,8 +45,6 @@ AC_ARG_WITH([mono],
 
 AM_CONDITIONAL(ENABLE_MONO, test "x$with_mono" = "xyes")
 
-AC_PATH_PROG(GMCS, gmcs, no)
-AC_PATH_PROG(XBUILD, xbuild, no)
 
 dnl ==============================================
 dnl Check commonly used packages
@@ -66,7 +64,7 @@ AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
 allowed_plugins="bzr chrome eog geany gedit vim emacs tomboy telepathy xchat rhythmbox firefox totem-libzg firefox-36-libzg"
-# currently disabled = "epiphany firefox-40-libzg"
+# currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
 #   - see chrome's Makefile.am for how to compile it
@@ -87,6 +85,9 @@ if test "x${all_plugins}" = "xyes" ; then
 else
 	error_on_bad_plugin="0"
 fi
+
+AC_PATH_PROG(GMCS, gmcs, no)
+AC_PATH_PROG(XBUILD, xbuild, no)
 
 # Check for plugin-specific requirements and error if necessary
 for plugin in ${used_plugins}; do
@@ -132,23 +133,6 @@ for plugin in ${used_plugins}; do
 			continue
 		;;
 		firefox)
-		;;
-		firefox-40-libzg)
-			if test "${HAVE_LIBZG}" != "yes" ; then
-				plugin_error_or_ignore "libzeitgeist not found"
-				continue
-			fi
-			PKG_CHECK_MODULES(LIBXUL_2_0, libxul >= 2.0,
-				[HAVE_LIBXUL=yes], [HAVE_LIBXUL=no])
-			if test "${HAVE_LIBXUL}" != "yes" ; then
-				plugin_error_or_ignore "libxul 2.0+ for firefox-40-libzg not found"
-				continue
-			fi
-			XPIDL_BIN="`$PKG_CONFIG --variable=sdkdir libxul`/bin/xpidl"
-			AC_SUBST(XPIDL_BIN)
-			XUL_IDLDIR="`$PKG_CONFIG --variable=idldir libxul`"
-			AC_SUBST(XUL_IDLDIR)
-                        AC_DEFINE(MOZ_NO_MOZALLOC, ["For Mozilla Firefox 4"])
 		;;
 		firefox-36-libzg)
 			if test "${HAVE_LIBZG}" != "yes" ; then
@@ -198,10 +182,12 @@ for plugin in ${used_plugins}; do
                			 HAS_TOMBOY_ADDINS=yes, HAS_TOMBOY_ADDINS=no)
 			PKG_CHECK_MODULES(GTK_SHARP, gtk-sharp-2.0, 
 				HAS_GTK_SHARP=yes, GTK_SHARP=no)
+
 			if test "${ENABLE_ZEITGEIST_SHARP}" = "no" ; then
 				plugin_error_or_ignore "zeitgeist-sharp package not found"
 				continue
 			fi
+
 			AC_PATH_PROG(TOMBOY, tomboy, no)
 			if test "x$TOMBOY_ADDINS" = "xno"; then
 				plugin_error_or_ignore "You need to install tomboy"
@@ -215,7 +201,7 @@ for plugin in ${used_plugins}; do
 			  plugin_error_or_ignore "You need to install xbuild for tomboy"
 				continue
 			fi
-			if test "x$GTK_SHARP" = "xno"; then
+			if test "x$HAS_GTK_SHARP" = "xno"; then
 				plugin_error_or_ignore "You need to install gtk-sharp"
 				continue
 			fi
@@ -304,21 +290,13 @@ if test "x${PLUGINS}" != "x" ; then
                                         		continue 2
                                         	;;
                                         	firefox)
-												AC_CONFIG_FILES([
-													firefox/Makefile
-													firefox/extension/Makefile
-												])
-												continue 2
-											;;
-                                        	firefox-40-libzg)
-                                        		AC_CONFIG_FILES([
-                                        			firefox-40-libzg/Makefile
-                                        			firefox-40-libzg/extension/Makefile
-                                        			firefox-40-libzg/extension/components/Makefile
-                                        		])
-                                        		continue 2
-                                        	;;
-											firefox-36-libzg)
+							AC_CONFIG_FILES([
+								firefox/Makefile
+								firefox/extension/Makefile
+							])
+							continue 2
+						;;
+						firefox-36-libzg)
                                         		AC_CONFIG_FILES([
                                         			firefox-36-libzg/Makefile
                                         			firefox-36-libzg/extension/Makefile
