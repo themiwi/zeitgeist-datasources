@@ -63,7 +63,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany gedit vim emacs tomboy telepathy xchat rhythmbox firefox totem-libzg firefox-36-libzg"
+allowed_plugins="bzr chrome eog geany gedit vim emacs tomboy telepathy xchat rhythmbox firefox totem-libzg firefox-36-libzg thunderbird"
 # currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -155,10 +155,10 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "libzeitgeist not found"
 				continue
 			fi
-        	        if test "x$HAVE_GTK" = "xno"; then
+			if test "x$HAVE_GTK" = "xno"; then
 				plugin_error_or_ignore "You need to install gtk development headers"
 				continue
-	                fi
+			fi
 			PKG_CHECK_MODULES(GEANY, geany,
 				[HAVE_GEANY=yes], [HAVE_GEANY=no])
 			if test "${HAVE_GEANY}" != "yes" ; then
@@ -179,7 +179,7 @@ for plugin in ${used_plugins}; do
 			PKG_CHECK_MODULES(ZEITGEIST_SHARP, zeitgeist-sharp,
 				ENABLE_ZEITGEIST_SHARP=yes, ENABLE_ZEITGEIST_SHARP=no)
 			PKG_CHECK_MODULES(TOMBOY_ADDINS, tomboy-addins,
-               			 HAS_TOMBOY_ADDINS=yes, HAS_TOMBOY_ADDINS=no)
+				HAS_TOMBOY_ADDINS=yes, HAS_TOMBOY_ADDINS=no)
 			PKG_CHECK_MODULES(GTK_SHARP, gtk-sharp-2.0, 
 				HAS_GTK_SHARP=yes, GTK_SHARP=no)
 
@@ -206,6 +206,8 @@ for plugin in ${used_plugins}; do
 				continue
 			fi
 			AC_SUBST(ZEITGEIST_SHARP_LIBS)
+		;;
+		thunderbird)
 		;;
 		totem*)
 			if test "${with_vala}" != "yes" ; then
@@ -244,7 +246,7 @@ for plugin in ${used_plugins}; do
 			plugin_error_or_ignore "${plugin} is not handled"
 			continue
 		;;
-        esac
+		esac
 
 	# Add the specified plugin
 	used_plugins2="${used_plugins2} ${plugin}"
@@ -290,13 +292,13 @@ if test "x${PLUGINS}" != "x" ; then
                                         		continue 2
                                         	;;
                                         	firefox)
-							AC_CONFIG_FILES([
-								firefox/Makefile
-								firefox/extension/Makefile
-							])
-							continue 2
-						;;
-						firefox-36-libzg)
+                                        		AC_CONFIG_FILES([
+                                        			firefox/Makefile
+                                        			firefox/extension/Makefile
+                                        		])
+                                        		continue 2
+                                        	;;
+                                        	firefox-36-libzg)
                                         		AC_CONFIG_FILES([
                                         			firefox-36-libzg/Makefile
                                         			firefox-36-libzg/extension/Makefile
@@ -308,19 +310,26 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([geany/Makefile])
                                         		continue 2
                                         	;;
-											gedit)
+                                        	gedit)
                                         		AC_CONFIG_FILES([gedit/Makefile])
                                         		continue 2
-											;;
+                                        	;;
                                         	tomboy)
                                         		AC_CONFIG_FILES([tomboy/Makefile])
                                         		continue 2
                                         	;;
-											rhythmbox)
+                                        	rhythmbox)
                                         		AC_CONFIG_FILES([rhythmbox/Makefile])
                                         		continue 2
-											;;
-											totem-libzg)
+                                        	;;
+                                        	thunderbird)
+                                        		AC_CONFIG_FILES([
+                                        			thunderbird/Makefile
+                                        			thunderbird/extension/Makefile
+                                        		])
+                                        		continue 2
+                                        	;;
+                                        	totem-libzg)
                                         		AC_CONFIG_FILES([totem-libzg/Makefile])
                                         		continue 2
                                         	;;
@@ -332,11 +341,11 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([emacs/Makefile])
                                         		continue 2
                                         	;;
-											telepathy)
-												AC_CONFIG_FILES([telepathy/Makefile])
-												continue 2
-											;;
-						                    xchat)
+                                        	telepathy)
+                                        		AC_CONFIG_FILES([telepathy/Makefile])
+                                        		continue 2
+                                        	;;
+                                        	xchat)
                                         		AC_CONFIG_FILES([xchat/Makefile])
                                         		continue 2
                                         	;;
