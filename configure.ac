@@ -86,8 +86,7 @@ else
 	error_on_bad_plugin="0"
 fi
 
-AC_PATH_PROG(GMCS, gmcs, no)
-AC_PATH_PROG(XBUILD, xbuild, no)
+AC_PATH_PROG(DMCS, dmcs, no)
 
 # Check for plugin-specific requirements and error if necessary
 for plugin in ${used_plugins}; do
@@ -174,6 +173,8 @@ for plugin in ${used_plugins}; do
 				ENABLE_ZEITGEIST_SHARP=yes, ENABLE_ZEITGEIST_SHARP=no)
 			PKG_CHECK_MODULES(MONODEVELOP, monodevelop, 
 				HAS_MONODEVELOP=yes, HAS_MONODEVELOP=no)
+			PKG_CHECK_MODULES(MONO_ADDINS, mono-addins, 
+				HAS_MONO_ADDINS=yes, HAS_MONO_ADDINS=no)
 
 			if test "${ENABLE_ZEITGEIST_SHARP}" = "no" ; then
 				plugin_error_or_ignore "zeitgeist-sharp package not found"
@@ -183,7 +184,12 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "You need to install monodevelop"
 				continue
 			fi
+			if test "x$HAS_MONO_ADDINS" = "xno"; then
+				plugin_error_or_ignore "You need to install mono-addins"
+				continue
+			fi
 			AC_SUBST(MONODEVELOP_LIBS)
+			AC_SUBST(MONO_ADDINS_LIBS)
 		;;
 		npapi-plugin)
 			if test "${HAVE_LIBZG}" != "yes" ; then
@@ -212,12 +218,8 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "You need to install tomboy"
 				continue
 			fi
-			if test "x$GMCS" = "xno"; then
-				plugin_error_or_ignore "You need to install gmcs"
-				continue
-			fi
-			if test "x$XBUILD" = "xno"; then
-			  plugin_error_or_ignore "You need to install xbuild for tomboy"
+			if test "x$DMCS" = "xno"; then
+				plugin_error_or_ignore "You need to install dmcs"
 				continue
 			fi
 			if test "x$HAS_GTK_SHARP" = "xno"; then

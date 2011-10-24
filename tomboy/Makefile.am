@@ -20,7 +20,7 @@ RESOURCES = \
 	-resource:$(srcdir)/$(ADDIN_NAME).addin.xml
 
 $(TARGET): $(CSFILES)
-	$(GMCS) -out:$@ $(CSFLAGS) $(ASSEMBLIES) $(CSFILES) $(RESOURCES)
+	$(DMCS) -out:$@ $(CSFLAGS) $(ASSEMBLIES) $(CSFILES) $(RESOURCES)
 
 
 addinsdir = $(libdir)/tomboy/addins
