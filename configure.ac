@@ -63,7 +63,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany gedit vim emacs tomboy telepathy xchat rhythmbox firefox totem-libzg firefox-36-libzg"
+allowed_plugins="bzr chrome eog geany gedit vim emacs tomboy telepathy xchat rhythmbox firefox totem-libzg firefox-36-libzg monodevelop"
 # currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -166,6 +166,25 @@ for plugin in ${used_plugins}; do
 				continue
 			fi
 		;;
+		monodevelop)
+			if test "${with_mono}" != "yes" ; then
+				continue
+			fi
+			PKG_CHECK_MODULES(ZEITGEIST_SHARP, zeitgeist-sharp,
+				ENABLE_ZEITGEIST_SHARP=yes, ENABLE_ZEITGEIST_SHARP=no)
+			PKG_CHECK_MODULES(MONODEVELOP, monodevelop, 
+				HAS_MONODEVELOP=yes, HAS_MONODEVELOP=no)
+
+			if test "${ENABLE_ZEITGEIST_SHARP}" = "no" ; then
+				plugin_error_or_ignore "zeitgeist-sharp package not found"
+				continue
+			fi
+			if test "x$HAS_MONODEVELOP" = "xno"; then
+				plugin_error_or_ignore "You need to install monodevelop"
+				continue
+			fi
+			AC_SUBST(MONODEVELOP_LIBS)
+		;;
 		npapi-plugin)
 			if test "${HAVE_LIBZG}" != "yes" ; then
 				plugin_error_or_ignore "libzeitgeist not found"
@@ -181,7 +200,7 @@ for plugin in ${used_plugins}; do
 			PKG_CHECK_MODULES(TOMBOY_ADDINS, tomboy-addins,
                			 HAS_TOMBOY_ADDINS=yes, HAS_TOMBOY_ADDINS=no)
 			PKG_CHECK_MODULES(GTK_SHARP, gtk-sharp-2.0, 
-				HAS_GTK_SHARP=yes, GTK_SHARP=no)
+				HAS_GTK_SHARP=yes, HAS_GTK_SHARP=no)
 
 			if test "${ENABLE_ZEITGEIST_SHARP}" = "no" ; then
 				plugin_error_or_ignore "zeitgeist-sharp package not found"
@@ -308,7 +327,7 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([geany/Makefile])
                                         		continue 2
                                         	;;
-											gedit)
+						gedit)
                                         		AC_CONFIG_FILES([gedit/Makefile])
                                         		continue 2
 											;;
@@ -316,12 +335,16 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([tomboy/Makefile])
                                         		continue 2
                                         	;;
-											rhythmbox)
+						rhythmbox)
                                         		AC_CONFIG_FILES([rhythmbox/Makefile])
                                         		continue 2
 											;;
-											totem-libzg)
+						totem-libzg)
                                         		AC_CONFIG_FILES([totem-libzg/Makefile])
+                                        		continue 2
+                                        	;;
+						monodevelop)
+                                        		AC_CONFIG_FILES([monodevelop/Makefile])
                                         		continue 2
                                         	;;
                                         	vim)
@@ -332,11 +355,11 @@ if test "x${PLUGINS}" != "x" ; then
                                         		AC_CONFIG_FILES([emacs/Makefile])
                                         		continue 2
                                         	;;
-											telepathy)
-												AC_CONFIG_FILES([telepathy/Makefile])
-												continue 2
-											;;
-						                    xchat)
+						telepathy)
+							AC_CONFIG_FILES([telepathy/Makefile])
+							continue 2
+						;;
+						xchat)
                                         		AC_CONFIG_FILES([xchat/Makefile])
                                         		continue 2
                                         	;;
