@@ -30,10 +30,10 @@ Installation:
 Copy this directory to ~/.bazaar/plugins/zeitgeist/*
 """
 
-import time
 from bzrlib import (
     branch,
     trace,
+    urlutils,
     )
 
 _client = None
@@ -62,35 +62,45 @@ def get_client():
     return _client
 
 
+def subject_for_branch(branch):
+    from zeitgeist.datamodel import Subject, Interpretation, Manifestation
+    location = urlutils.unescape_for_display(branch.base, "utf-8").decode("utf-8")
+    return Subject.new_for_values(
+        uri=unicode(branch.base),
+        interpretation=unicode(Interpretation.FOLDER),
+        manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
+        text=u"Bazaar branch at %s" % location,
+        origin=unicode(branch.base),
+        mimetype="application/x-bzr",
+    )
+
+
+def get_actor():
+    # FIXME: Allow overriding this by e.g. qbzr and bzr-gtk
+    return u"application://bzr.desktop"
+
+
 def post_commit(local, master, old_revno, old_revid, new_revno, new_revid):
     client = get_client()
     if client is None:
         return
-    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
+    from zeitgeist.datamodel import Event, Interpretation, Manifestation
     revision = master.repository.get_revision(new_revid)
     if new_revno == 1:
         interpretation = Interpretation.CREATE_EVENT
     else:
         interpretation = Interpretation.MODIFY_EVENT
-    _text  = _("Commited on: ")
-    _text += master.base[7:-1] #don't considere file://
-    _text += _(" Revision no. : ")
+    _text = _(" Revision no. : ")
     _text += str(new_revno) + "\n"
     _text += revision.message.rstrip()
 
-    subject = Subject.new_for_values(
-        uri=unicode(master.base),
-        interpretation=unicode(Interpretation.FOLDER),
-        manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
-        text=unicode(_text),
-        origin=unicode(master.base),
-    )
+    subject = subject_for_branch(master)
     event = Event.new_for_values(
-        timestamp=int(time.time()*1000),
+        timestamp=int(revision.timestamp*1000),
         interpretation=unicode(interpretation),
         manifestation=unicode(Manifestation.USER_ACTIVITY),
-        actor="application://bzr.desktop", #something usefull here, always olive-gtk?
-        subjects=[subject,]
+        actor=get_actor(),
+        subjects=[subject,],
     )
     client.insert_event(event)
 
@@ -99,27 +109,34 @@ def post_pull(pull_result):
     client = get_client()
     if client is None:
         return
-    from zeitgeist.datamodel import Event, Subject, Interpretation, Manifestation
-    master = pull_result.master_branch
-    revision = master.repository.get_revision(pull_result.new_revid)
-    interpretation = Interpretation.RECEIVE_EVENT
-    _text = _("Pulled ")
-    _text += master.base[7:-1] #don't considere file://
-    _text += (" to revision ")
-    _text += str(master.revno())+":\n"
-    _text += revision.get_summary()
-    subject = Subject.new_for_values(
-        uri=unicode(master.base),
-        interpretation=unicode(Interpretation.FOLDER),
-        manifestation=unicode(Manifestation.FILE_DATA_OBJECT),
-        text=unicode(_text),
-        origin=unicode(master.base),
-    )
+    from zeitgeist.datamodel import Event, Interpretation, Manifestation
+    revision = pull_result.master_branch.repository.get_revision(pull_result.new_revid)
+    _text = _("Pulled to revision %s:\n %s") % (pull_result.new_revno,
+            revision.get_summary())
+    subject = subject_for_branch(pull_result.master_branch)
     event = Event.new_for_values(
-        timestamp=int(time.time()*1000),
-        interpretation=unicode(interpretation),
+        interpretation=unicode(Interpretation.RECEIVE_EVENT),
         manifestation=unicode(Manifestation.USER_ACTIVITY),
-        actor="application://bzr.desktop", #something usefull here, always olive-gtk?
+        actor=get_actor(),
+        subjects=[subject,]
+    )
+    client.insert_event(event)
+
+
+def post_push(push_result):
+    client = get_client()
+    if client is None:
+        return
+    from zeitgeist.datamodel import Event, Interpretation, Manifestation
+    revision = push_result.master_branch.repository.get_revision(
+        push_result.new_revid)
+    _text = _("Pushed to revision %s:\n %s") % (push_result.new_revno,
+        revision.get_summary())
+    subject = subject_for_branch(push_result.master_branch)
+    event = Event.new_for_values(
+        interpretation=unicode(Interpretation.SEND_EVENT),
+        manifestation=unicode(Manifestation.USER_ACTIVITY),
+        actor=get_actor(),
         subjects=[subject,]
     )
     client.insert_event(event)
@@ -128,4 +145,6 @@ def post_pull(pull_result):
 branch.Branch.hooks.install_named_hook("post_commit", post_commit,
                                        "Zeitgeist dataprovider for bzr")
 branch.Branch.hooks.install_named_hook("post_pull", post_pull,
+                                       "Zeitgeist dataprovider for bzr")
+branch.Branch.hooks.install_named_hook("post_push", post_push,
                                        "Zeitgeist dataprovider for bzr")
