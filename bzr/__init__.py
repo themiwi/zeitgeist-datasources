@@ -32,6 +32,7 @@ Copy this directory to ~/.bazaar/plugins/zeitgeist/*
 
 from bzrlib import (
     branch,
+    errors,
     trace,
     urlutils,
     )
@@ -110,7 +111,14 @@ def post_pull(pull_result):
     if client is None:
         return
     from zeitgeist.datamodel import Event, Interpretation, Manifestation
-    revision = pull_result.master_branch.repository.get_revision(pull_result.new_revid)
+    try:
+        revision = pull_result.master_branch.repository.get_revision(
+            pull_result.new_revid)
+    except errors.UnsupportedOperation:
+        # Some remote repository formats (e.g. git) don't support looking at invidual
+        # revisions
+        revision = pull_result.source_branch.repository.get_revision(
+            pull_result.new_revid)
     _text = _("Pulled to revision %s:\n %s") % (pull_result.new_revno,
             revision.get_summary())
     subject = subject_for_branch(pull_result.master_branch)
@@ -128,8 +136,12 @@ def post_push(push_result):
     if client is None:
         return
     from zeitgeist.datamodel import Event, Interpretation, Manifestation
-    revision = push_result.master_branch.repository.get_revision(
-        push_result.new_revid)
+    try:
+        revision = push_result.master_branch.repository.get_revision(
+            push_result.new_revid)
+    except errors.UnsupportedOperation:
+        revision = push_result.source_branch.repository.get_revision(
+            push_result.new_revid)
     _text = _("Pushed to revision %s:\n %s") % (push_result.new_revno,
         revision.get_summary())
     subject = subject_for_branch(push_result.master_branch)
