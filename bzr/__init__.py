@@ -30,6 +30,8 @@ Installation:
 Copy this directory to ~/.bazaar/plugins/zeitgeist/*
 """
 
+from __future__ import absolute_import
+
 from bzrlib import branch
 
 branch.Branch.hooks.install_lazy_named_hook("post_commit",
