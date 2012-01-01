@@ -84,7 +84,11 @@ chrome.tabs.onUpdated.addListener (onTabUpdated);
 chrome.tabs.onCreated.addListener (onTabCreated);
 chrome.tabs.onRemoved.addListener (onTabRemoved);
 
-chrome.tabs.getAllInWindow(null, function (tabs) {
-	for (var i=0; i<tabs.length; i++)
-		chrome.tabs.executeScript(tabs[i].id, {file: "content_script.js"});
+chrome.windows.getAll({"populate" : true}, function (windows) {
+    for (var i = 0; i < windows.length; i++) {
+        var tabs = windows[i].tabs;
+        for (var j = 0; j < tabs.length; j++) {
+	    chrome.tabs.executeScript(tabs[j].id, {file: "content_script.js"});
+        }
+    }
 });
