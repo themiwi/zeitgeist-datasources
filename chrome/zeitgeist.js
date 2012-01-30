@@ -1,5 +1,6 @@
 var plugin = document.embeds[0];
 var tabInfo = {};
+var tabIdTimeouts = {};
 
 function onTabCreated (tab) {
 	chrome.tabs.executeScript(tab.id, {file: "content_script.js"});
@@ -11,7 +12,11 @@ function onTabRemoved (tabid) {
 
 function onTabUpdated (tabid, changeInfo, tab) {
 	if (!changeInfo.url) return;
-	chrome.tabs.executeScript(tabid, {file: "content_script.js"});
+	window.clearTimeout(tabIdTimeouts[tabid])
+	tabIdTimeouts[tabid] = window.setTimeout(function(){
+		console.log("sending event for " + tab.url);
+		chrome.tabs.executeScript(tabid, {file: "content_script.js"});},
+		5000);
 }
 
 function onBookmarkCreated (bookmarkid, bookmark) {
@@ -79,16 +84,16 @@ if (!is_chromium) plugin.setActor("application://google-chrome.desktop");
 else plugin.setActor("application://chromium-browser.desktop");
 
 chrome.extension.onRequest.addListener (onExtensionRequest);
-chrome.bookmarks.onCreated.addListener (onBookmarkCreated);
+//chrome.bookmarks.onCreated.addListener (onBookmarkCreated);
 chrome.tabs.onUpdated.addListener (onTabUpdated);
-chrome.tabs.onCreated.addListener (onTabCreated);
-chrome.tabs.onRemoved.addListener (onTabRemoved);
+//chrome.tabs.onCreated.addListener (onTabCreated);
+//chrome.tabs.onRemoved.addListener (onTabRemoved);
 
 chrome.windows.getAll({"populate" : true}, function (windows) {
     for (var i = 0; i < windows.length; i++) {
         var tabs = windows[i].tabs;
         for (var j = 0; j < tabs.length; j++) {
-	    chrome.tabs.executeScript(tabs[j].id, {file: "content_script.js"});
+            chrome.tabs.executeScript(tabs[j].id, {file: "content_script.js"});
         }
     }
 });
