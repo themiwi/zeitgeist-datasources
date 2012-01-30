@@ -19,8 +19,8 @@
     </em:targetApplication>
    
     <!-- Front End MetaData -->
-    <em:name>Zeitgeist</em:name>
-    <em:description>Dataprovider for the zeitgeist framework</em:description>
+    <em:name>Zeitgeist data-source</em:name>
+    <em:description>Data-source to send events to Zeitgeist</em:description>
     <em:creator>Markus Korn</em:creator>
 	<em:contributor>Mark Tully</em:contributor>
     <em:homepageURL>http://launchpad.net/zeitgeist</em:homepageURL>
