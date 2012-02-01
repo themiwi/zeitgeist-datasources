@@ -6,5 +6,5 @@ Useful resources:
 	
 TODO
 ====
-	* add events for downloads, see https://developer.mozilla.org/en/nsIDownloadProgressListener
 	* add ability to delete events (Zeitgeist should mirror Firefox's history)
+    * add CloseEvents

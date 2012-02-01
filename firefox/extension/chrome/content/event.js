@@ -1,31 +1,58 @@
+function getOriginFromUri(uri) {
+	var parts = uri.split("://", 2);
+	if (parts[0] == "file") {
+		// Local file URI, we just trim it to directory in which the file is
+		return uri.substring(0, uri.lastIndexOf('/') + 1);
+	} else {
+		// HTTP(S), FTP or any other URI, we only take up to the domain name
+		return parts[0] + "://" + parts[1].split("/")[0] + "/";
+	}
+}
+
+function getManifestationFromUri(uri) {
+	var parts = uri.split("://", 2);
+	if (parts[0] == "file") {
+		return "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#FileDataObject";
+	} else if (parts[0] == "http" || parts[0] == "https") {
+		return "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#WebDataObject";
+	} else {
+		// May be FTP or something else
+		return "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#RemoteDataObject";
+	}
+}
+
+/*
+function isDebugEnabled() {
+	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+		.getService(Components.interfaces.nsIPrefBranch);
+	return prefs.getBoolPref("extensions.zeitgeist.log");
+}
+*/
+
+function isPrivateBrowsing() {
+	var pbs = Components.classes["@mozilla.org/privatebrowsing;1"]
+		.getService(Components.interfaces.nsIPrivateBrowsingService);
+	return pbs.privateBrowsingEnabled;
+}
+
 var ZeitgeistProgressListener = {
 	onStateChange: function(aBrowser, aProgress, aRequest, aStateFlags) {
-		
-		//Don't do anything if Private Browsing is enabled
-		var pbs = Components.classes["@mozilla.org/privatebrowsing;1"]
-				.getService(Components.interfaces.nsIPrivateBrowsingService);
-		if (pbs.privateBrowsingEnabled) return;   
-						
+		// Don't do anything if Private Browsing is enabled
+		if (isPrivateBrowsing()) return;
+	
 		if (aStateFlags & Components.interfaces.nsIWebProgressListener.STATE_STOP) {
 			let uri = aBrowser.currentURI.spec;
-			//Ignore pages without titles (generally redirect pages)
+			// Ignore pages without titles (generally redirect pages)
 			if (aBrowser.contentTitle == "") return;
 			
 			let mimetype = aBrowser.contentDocument.contentType;
 			if (aRequest.name == uri && !this.ignore_uri(uri)) {
-				var origin;
-				var parts = uri.split("://", 2);
-				if (parts[0] == "file") {
-					// Local file URI, we just trim it to directory in which the file is
-					origin = uri.substring(0, uri.lastIndexOf('/') + 1);
-				} else {
-					// HTTP(S), FTP or any other URI, we only take up to the domain name
-					origin = parts[0] + "://" + parts[1].split("/")[0] + "/";
-				}
-						
-				let subject = libzeitgeist.zeitgeist_subject_new_full( 	uri,
+				let origin = getOriginFromUri(uri);
+				let subject_manifestation = getManifestationFromUri(uri);
+
+				let subject = libzeitgeist.zeitgeist_subject_new_full(uri,
 																	"http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Website",
-																	"http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#RemoteDataObject",
+																	subject_manifestation,
 																	mimetype,
 																	origin,
 																	aBrowser.contentTitle,
@@ -38,11 +65,9 @@ var ZeitgeistProgressListener = {
 																	null);
 								
 				libzeitgeist.zeitgeist_log_insert_events_no_reply(libzeitgeist.log, event, null);
-				
-				//Log event in Firefox's error console if logging pref is true
-				var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-										.getService(Components.interfaces.nsIPrefBranch);
-				if (prefs.getBoolPref("extensions.zeitgeist.log")) {
+
+				/*	
+				if (isDebugEnabled()) {
 					zeitgeist.debug("Event added to zeitgeist:" +
 									"\n\t\tevent interpretation: EVENT_INTERPRETATION.ACCESS_EVENT" +
 									"\n\t\tEvent manifestation: EVENT_MANIFESTATION.USER_ACTIVITY" +
@@ -55,6 +80,7 @@ var ZeitgeistProgressListener = {
 									"\n\t\t\ttitle: " + aBrowser.contentTitle +
 									"\n\t\t\tstorage: net");
 				}
+				*/
 				
 				var googlemail_view_regex = new RegExp("mail\\.google\\.com");
 				if (ZeitgeistPrefObserver.get_bool("enable_googlemail") & googlemail_view_regex.test(uri)) {
@@ -89,7 +115,7 @@ var ZeitgeistProgressListener = {
 	onSecurityChange: function(){},
 	onProgressChange: function(){},
 	
-	//Useful helpers	
+	// Useful helpers	
 	ignore_uri: function(uri) {
 		for (pattern in ZeitgeistPrefObserver.ignored_uris) {
 			if (ZeitgeistPrefObserver.ignored_uris[pattern].test(uri)) {
@@ -100,10 +126,56 @@ var ZeitgeistProgressListener = {
 	},
 };
 
+var ZeitgeistDownloadManagerListener = {
+	onDownloadStateChange: function(state, dl) {
+		// FIXME: DOWNLOAD_FINISHED would probably be more awesome, but
+		//        it doesn't seem to be sent correctly :(
+		if (state != 0 /*DOWNLOAD_DOWNLOADING*/) return;
+		if (isPrivateBrowsing()) return;
+
+		let uri = 'file://' + dl.targetFile.path;
+		let subject = libzeitgeist.zeitgeist_subject_new_full(
+			uri,
+			"http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Website",
+			"", // empty manifestation, Bluebird Alpha 2+ will figure it out
+			"", // FIXME: not working: dl.MIMEInfo.type
+			getOriginFromUri(uri),
+			dl.displayName,
+			"" // figure our storage (in case of saving to usb/sftp/etc)
+		);
+		
+		// FIXME: libzeitgeist is missing event origin!
+		// FIXME: where do we put the original download URI? event origin
+		//        is already supposed to be the page where you clicked
+		//        the download link...
+		let event_ = libzeitgeist.zeitgeist_event_new_full(
+			"http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#CreateEvent", 
+			"http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity", 
+			"application://firefox.desktop",
+			subject,
+			null
+		);
+
+		libzeitgeist.zeitgeist_log_insert_events_no_reply(libzeitgeist.log, event_, null);
+	},
+
+	onSecurityChange: function() {},
+	onProgressChange: function() {},
+	onStateChange: function() {}
+};
+
 var zeitgeist = {
 	init: function() { 
 		ZeitgeistPrefObserver.register();
+
+		// Listen to tab changes
 		gBrowser.addTabsProgressListener(ZeitgeistProgressListener);
+
+		// Listen to downloads
+		var downloadManager = Components.classes["@mozilla.org/download-manager;1"]
+			.getService(Components.interfaces.nsIDownloadManager);
+		downloadManager.addListener(ZeitgeistDownloadManagerListener);
+
 		libzeitgeist.init();
 	},
 	
