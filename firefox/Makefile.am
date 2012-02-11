@@ -5,9 +5,9 @@ TARGET_PROFILE = *default*
 
 local-install: all
 	$(MAKE) -C extension $@
-	cp xpcom-firefox\@zeitgeist-project.com.xpi ~/.mozilla/firefox/$(TARGET_PROFILE)/extensions/
+	cp xpcom-firefox@zeitgeist-project.com.xpi ~/.mozilla/firefox/$(TARGET_PROFILE)/extensions/
 
 local-uninstall:
 	$(MAKE) -C extension $@
-	-rm -rf ~/.mozilla/firefox/$(TARGET_PROFILE)/extensions/xpcom-firefox\@zeitgeist-project.com.xpi
+	-rm -rf ~/.mozilla/firefox/$(TARGET_PROFILE)/extensions/xpcom-firefox@zeitgeist-project.com.xpi
 
