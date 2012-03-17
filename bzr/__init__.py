@@ -34,12 +34,12 @@ from __future__ import absolute_import
 
 from bzrlib import branch
 
-branch.Branch.hooks.install_lazy_named_hook("post_commit",
+branch.Branch.hooks.install_named_hook_lazy("post_commit",
     "bzrlib.plugins.zeitgeist.hooks", "post_commit",
     "Zeitgeist dataprovider for bzr")
-branch.Branch.hooks.install_lazy_named_hook("post_pull",
+branch.Branch.hooks.install_named_hook_lazy("post_pull",
     "bzrlib.plugins.zeitgeist.hooks", "post_pull",
     "Zeitgeist dataprovider for bzr")
-branch.Branch.hooks.install_lazy_named_hook("post_push",
+branch.Branch.hooks.install_named_hook_lazy("post_push",
     "bzrlib.plugins.zeitgeist.hooks", "post_push",
     "Zeitgeist dataprovider for bzr")

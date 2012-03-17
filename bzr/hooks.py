@@ -65,7 +65,7 @@ def subject_for_branch(branch):
 
 def get_actor():
     # FIXME: Allow overriding this by e.g. qbzr and bzr-gtk
-    return u"application://bzr.desktop"
+    return u"application://bzr-notify.desktop"
 
 
 def post_commit(local, master, old_revno, old_revid, new_revno, new_revid):
