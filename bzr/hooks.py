@@ -111,7 +111,7 @@ def post_pull(pull_result):
     subject = subject_for_branch(pull_result.master_branch)
     event = Event.new_for_values(
         interpretation=unicode(Interpretation.RECEIVE_EVENT),
-        manifestation=unicode(Manifestation.USER_ACTIVITY),
+        manifestation=unicode(Manifestation.WORLD_ACTIVITY),
         actor=get_actor(),
         subjects=[subject,]
     )
