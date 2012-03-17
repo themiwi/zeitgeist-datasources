@@ -78,11 +78,12 @@ def post_commit(local, master, old_revno, old_revid, new_revno, new_revid):
         interpretation = Interpretation.CREATE_EVENT
     else:
         interpretation = Interpretation.MODIFY_EVENT
-    _text = _(" Revision no. : ")
+    _text = _("Revision: ")
     _text += str(new_revno) + "\n"
     _text += revision.message.rstrip()
 
     subject = subject_for_branch(master)
+    subject.set_text(_text)
     event = Event.new_for_values(
         timestamp=int(revision.timestamp*1000),
         interpretation=unicode(interpretation),
