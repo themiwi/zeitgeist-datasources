@@ -20,6 +20,7 @@ var ZeitgeistNewMailListener = {
 			let author = hdrParser.extractHeaderAddressName(aMsgHdr.mime2DecodedAuthor);
 			let address = hdrParser.extractHeaderAddressMailboxes(aMsgHdr.author);
 			let message_subject = aMsgHdr.mime2DecodedSubject
+			let account = aMsgHdr.folder.server.prettyName
 
 			let subject = libzeitgeist.zeitgeist_subject_new_full( uri,
 										"http://www.semanticdesktop.org/ontologies/2007/03/22/nmo#Email",
@@ -35,6 +36,9 @@ var ZeitgeistNewMailListener = {
 												subject,
 												null);
 
+			libzeitgeist.zeitgeist_event_set_origin( event,
+												account)
+
 			libzeitgeist.zeitgeist_log_insert_events_no_reply(libzeitgeist.log, event, null);
 
 			//Log event in Thunderbird's error console if logging pref is true
@@ -42,9 +46,10 @@ var ZeitgeistNewMailListener = {
 									.getService(Components.interfaces.nsIPrefBranch);
 			if (prefs.getBoolPref("extensions.zeitgeist.log")) {
 				zeitgeist.debug("Event added to zeitgeist:" +
-								"\n\t\tevent interpretation: EVENT_INTERPRETATION.RECEIVE_EVENT" +
+								"\n\t\tEvent interpretation: EVENT_INTERPRETATION.RECEIVE_EVENT" +
 								"\n\t\tEvent manifestation: EVENT_MANIFESTATION.SYSTEM_NOTIFICATION" +
 								"\n\t\tActor: application://thunderbird.desktop" +
+								"\n\t\tOrigin: " + account +
 								"\n\t\tSubject:\n\t\t\tSubject interpretation: MESSAGE.EMAIL" +
 								"\n\t\t\tSubject manifestation: MAILBOX_DATA_OBJECT" +
 								"\n\t\t\turl: " + uri +

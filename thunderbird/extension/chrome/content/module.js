@@ -25,6 +25,12 @@ var libzeitgeist = {
 														ctypes.char.ptr,	//subject
 														ctypes.voidptr_t);
 
+		this.zeitgeist_event_set_origin = this.lib.declare( "zeitgeist_event_set_origin",
+														ctypes.default_abi,
+														ctypes.voidptr_t,
+														ctypes.char.ptr,	//event
+														ctypes.char.ptr);	//origin
+
 		this.zeitgeist_subject_new_full = this.lib.declare( "zeitgeist_subject_new_full",
 														ctypes.default_abi,
 														ctypes.char.ptr,
