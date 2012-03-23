@@ -51,6 +51,7 @@ hasMethod(NPObject* obj, NPIdentifier methodName) {
 
   if (!strcmp(name, "insertEvent")) return true;
   else if (!strcmp(name, "setActor")) return true;
+  else if (!strcmp(name, "saveSnapshot")) return true;
 
   return false;
 }
@@ -59,6 +60,7 @@ static bool
 invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
   /* args should be: url, origin, mimetype, title, [interpretation] */
+  g_debug("Inserting event");
   char *url, *origin, *mimetype, *title;
   char *interpretation = NULL;
   const char *manifestation = NULL;
@@ -66,9 +68,11 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
   const NPString *np_s;
   ZeitgeistEvent *event;
 
+  g_debug("arg count: %d", argCount);
   if(argCount < 4 || argCount > 6)
   {
     npnfuncs->setexception(obj, "exception during invocation");
+    g_debug("too many or too few args");
     return false;
   }
 
@@ -145,6 +149,64 @@ invokeInsertEvent (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVa
 }
 
 static bool
+invokeSaveSnapshot (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVariant *result)
+{
+  char *url;
+  char *screenshotURL = NULL;
+  const NPString *np_s;
+  np_s = &NPVARIANT_TO_STRING (args[0]);
+  url = g_strndup(np_s->UTF8Characters, np_s->UTF8Length);
+  np_s = &NPVARIANT_TO_STRING (args[1]);
+  screenshotURL = g_strndup(np_s->UTF8Characters, np_s->UTF8Length);
+
+  if (!screenshotURL)
+    return false;
+
+  gsize len = strlen(screenshotURL) - 22;
+  char *img = new char[len];
+  memset(img, 0, len);
+  memcpy(img, screenshotURL + 22, len);
+
+  // update thumbnail
+  gchar *thumbnail_path;
+  gchar *thumbnail_filename = NULL;
+  gchar *thumbnail_dir;
+  gchar *csum;
+
+  // create dir if it doesn't exist
+  thumbnail_dir = g_build_filename (g_get_home_dir (),
+      ".thumbnails",
+      "large",
+      NULL);
+  if (!g_file_test(thumbnail_dir, G_FILE_TEST_IS_DIR)) {
+    g_mkdir_with_parents (thumbnail_dir, 0755);
+  }
+  g_free (thumbnail_dir);
+
+  csum = g_compute_checksum_for_string (G_CHECKSUM_MD5, url, -1);
+
+  thumbnail_filename = g_strconcat (csum, ".png", NULL);
+  thumbnail_path = g_build_filename (g_get_home_dir (),
+      ".thumbnails",
+      "large",
+      thumbnail_filename,
+      NULL);
+  g_free (csum);
+
+  guchar *jpg_data = g_base64_decode(img, &len);
+
+  g_debug("Writing thumbnail to %s", thumbnail_path);
+  g_file_set_contents(thumbnail_path, (gchar*)jpg_data, len, NULL);
+
+  g_free (img);
+  g_free (jpg_data);
+  g_free (thumbnail_filename);
+  g_free (thumbnail_path);
+
+  return true;
+}
+
+static bool
 invokeSetActor (NPObject *obj, const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
   const NPString *np_s;
@@ -175,6 +237,7 @@ invoke(NPObject* obj, NPIdentifier methodName, const NPVariant *args, uint32_t a
 
   name = npnfuncs->utf8fromidentifier(methodName);
 
+  g_debug("Calling %s", name);
   if(name)
   {
     if (!strcmp (name, "insertEvent"))
@@ -184,6 +247,10 @@ invoke(NPObject* obj, NPIdentifier methodName, const NPVariant *args, uint32_t a
     else if (!strcmp (name, "setActor"))
     {
       return invokeSetActor(obj, args, argCount, result);
+    }
+    else if (!strcmp (name, "saveSnapshot"))
+    {
+      return invokeSaveSnapshot(obj, args, argCount, result);
     }
   }
 

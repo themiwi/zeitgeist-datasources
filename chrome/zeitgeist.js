@@ -1,6 +1,7 @@
 var plugin = document.embeds[0];
 var tabInfo = {};
 var tabIdTimeouts = {};
+var currentTabs = {};
 
 function onTabCreated (tab) {
 	chrome.tabs.executeScript(tab.id, {file: "content_script.js"});
@@ -39,10 +40,14 @@ function sendAccessEvent (documentInfo, tabid) {
 	}
 	var mimetype = documentInfo.mimeType;
 	var title = documentInfo.title;
-	plugin.insertEvent(url,
-	                   domain,
-	                   mimetype ? mimetype : "text/html",
-	                   title);
+  plugin.insertEvent(url,
+                     domain,
+                     mimetype ? mimetype : "text/html",
+                     title);
+  console.log("save thumbnail for "+currentTabs[tabid]+": "+url);
+  chrome.tabs.captureVisibleTab(currentTabs[tabid], {format:"jpeg", quality:5}, function(dataUrl) {
+      plugin.saveSnapshot(url, dataUrl);
+  });
 
 	documentInfo.sentAccess = true;
 	tabInfo[tabid] = documentInfo;
@@ -86,6 +91,17 @@ else plugin.setActor("application://chromium-browser.desktop");
 chrome.extension.onRequest.addListener (onExtensionRequest);
 //chrome.bookmarks.onCreated.addListener (onBookmarkCreated);
 chrome.tabs.onUpdated.addListener (onTabUpdated);
+chrome.tabs.onCreated.addListener(
+  function (tab) {
+    currentTabs[tab.id] = tab.windowId;
+  }
+);
+
+chrome.tabs.onRemoved.addListener(
+  function (tabid) {
+    delete currentTabs[tabid];
+  }
+);
 //chrome.tabs.onCreated.addListener (onTabCreated);
 //chrome.tabs.onRemoved.addListener (onTabRemoved);
 
