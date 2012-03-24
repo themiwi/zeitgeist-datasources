@@ -77,7 +77,7 @@ static int join_cb(char *word[], void *userdata)
    channel_list = g_slist_prepend(channel_list, g_strdup(channel));
    
    url = g_strconcat("irc://", server, "/", channel, NULL);
-   text = g_strconcat("IRC ", channel, NULL);
+   text = g_strconcat("You joined ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_ACCESS_EVENT);
    
@@ -95,7 +95,7 @@ static int part_cb(char *word[], char* word_eol[], void *userdata)
    GSList *tmp = channel_list;
   
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat("IRC ", channel, NULL);
+   text = g_strconcat("You parted from ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_LEAVE_EVENT);
    
@@ -116,7 +116,7 @@ static int part_cb(char *word[], char* word_eol[], void *userdata)
    return XCHAT_EAT_NONE;
 }
 
-static int message_cb(char *word[], void *userdata)
+/*static int message_cb(char *word[], void *userdata)
 {
    const char *server = xchat_get_info(ph, "host");
    const char *channel = xchat_get_info(ph, "channel");
@@ -131,9 +131,9 @@ static int message_cb(char *word[], void *userdata)
    g_free(text);
    
    return XCHAT_EAT_NONE;
-}
+}*/
 
-static int priv_message_cb(char *word[], void *userdata)
+/*static int priv_message_cb(char *word[], void *userdata)
 {
    const char *server = xchat_get_info(ph, "host");
    const char *channel = xchat_get_info(ph, "channel");
@@ -148,7 +148,7 @@ static int priv_message_cb(char *word[], void *userdata)
    g_free(text);
    
    return XCHAT_EAT_NONE;
-}
+}*/
 
 static void on_quit(gpointer data, gpointer userdata)
 {
@@ -157,7 +157,7 @@ static void on_quit(gpointer data, gpointer userdata)
    char *url, *text;   
    
    url = g_strconcat("irc://", server, "/", channel, NULL);  
-   text = g_strconcat("IRC ", channel, NULL);
+   text = g_strconcat("You parted from ", channel, NULL);
    
    send_event_to_zeitgeist(url, text, ZEITGEIST_ZG_LEAVE_EVENT);
    
@@ -200,8 +200,8 @@ int xchat_plugin_init(xchat_plugin *plugin_handle,
    zg_log = zeitgeist_log_new();
 
    xchat_hook_print(ph, "You Join", XCHAT_PRI_NORM, join_cb, 0);
-   xchat_hook_print(ph, "Your Message", XCHAT_PRI_NORM, message_cb, 0);
-   xchat_hook_print(ph, "Channel Msg Hilight", XCHAT_PRI_NORM, priv_message_cb, 0); 
+   /*xchat_hook_print(ph, "Your Message", XCHAT_PRI_NORM, message_cb, 0);
+   xchat_hook_print(ph, "Channel Msg Hilight", XCHAT_PRI_NORM, priv_message_cb, 0); */
    xchat_hook_server(ph, "PART", XCHAT_PRI_NORM, part_cb, 0);
 
    xchat_print(ph, "Zeitgeist plugin loaded\n");
