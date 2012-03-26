@@ -314,7 +314,7 @@ factory.add_channel_features ([Tp.Channel.get_feature_quark_contacts ()])
 factory.add_contact_features ([Tp.ContactFeature.ALIAS])
 
 observer = Tp.SimpleObserver.new_with_factory (factory, True,
-    'Zeitgeist', True, observe_channels, None)
+    'Zeitgeist', False, observe_channels, None)
 
 # Add call observer properties
 observer.add_observer_filter ({
