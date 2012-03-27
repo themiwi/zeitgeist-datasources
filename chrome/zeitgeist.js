@@ -45,7 +45,7 @@ function sendAccessEvent (documentInfo, tabid) {
                      mimetype ? mimetype : "text/html",
                      title);
   console.log("save thumbnail for "+currentTabs[tabid]+": "+url);
-  chrome.tabs.captureVisibleTab(currentTabs[tabid], {format:"jpeg", quality:5}, function(dataUrl) {
+  chrome.tabs.captureVisibleTab(currentTabs[tabid], {format:"png"}, function(dataUrl) {
       plugin.saveSnapshot(url, dataUrl);
   });
 
