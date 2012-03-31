@@ -1,3 +1,22 @@
+2012-03-31: zeitgeist-datasources 0.8.1
+
+* New Thunderbird datasource
+* New Monodeveloper datasources
+* Stop XChat from logging messages to avoid polluting database
+* Set telepathy subject uri's to telepathy://account_path/target_id
+* Fix actor for chrome
+* New Firefox datasource using js-ctypes which replaces old datasource
+* Lazily loads Bazaar datasource
+* Fix an issue in which event was logged only for one chrome window
+* Log Firefox downloads
+* Update eog plugin file
+* Fix firefox local-install
+* Fixes the bug which generated messages when opening or saving file in emacs
+    zeitgeist-event-interpretation: Symbol's function definition 
+    is void: zeitgeist-open-file-event
+* Log website visit only if page has been visited only for 5 or more seconds
+* Chrome datasource: Save a thumbnail with every page load
+
 2011-06-05: zeitgeist-dataproviders 0.8.0 "Indian Spices"
 ------------------------------------------------------------
 
