@@ -28,7 +28,7 @@ addins_DATA = 	$(TARGET)
 
 EXTRA_DIST =            	\
 	$(CSFILES) \
-	$(srcdir)/$(ADDIN_NAME).addin.xml
+	$(srcdir)/MonoDevelop.Zeitgeist.addin.xml
 	
 DISTCLEANFILES = \
 	$(TARGET) \
