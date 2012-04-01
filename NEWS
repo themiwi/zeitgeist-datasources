@@ -6,6 +6,7 @@
 * Removed gedit Datasource as it uses GtkRecentManager
 * Removed eog (Eye of GNOME) Datasource as it uses GtkRecentManager
 * Removed Totem datasource as it is now upstream
+* Removed Rhythmbox datasource as it is now upstream
 * Stop XChat from logging messages to avoid polluting database
 * Set telepathy subject uri's to telepathy://account_path/target_id
 * Fix actor for chrome
