@@ -1,11 +1,12 @@
 2012-03-31: zeitgeist-datasources 0.8.1
 
+* New Firefox datasource using js-ctypes which replaces old native addon
 * New Thunderbird datasource
 * New Monodeveloper datasources
+* Removed gedit datasource
 * Stop XChat from logging messages to avoid polluting database
 * Set telepathy subject uri's to telepathy://account_path/target_id
 * Fix actor for chrome
-* New Firefox datasource using js-ctypes which replaces old datasource
 * Lazily loads Bazaar datasource
 * Fix an issue in which event was logged only for one chrome window
 * Log Firefox downloads
