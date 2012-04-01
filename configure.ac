@@ -63,7 +63,7 @@ AC_ARG_ENABLE([all-plugins],
 AC_MSG_NOTICE([Requested to enable all plugins: ${all_plugins}])
 
 # The full list of plugins
-allowed_plugins="bzr chrome eog geany vim emacs tomboy telepathy xchat rhythmbox firefox totem-libzg firefox-36-libzg monodevelop thunderbird"
+allowed_plugins="bzr chrome geany vim emacs tomboy telepathy xchat rhythmbox firefox totem-libzg firefox-36-libzg monodevelop thunderbird"
 # currently disabled = "epiphany"
 
 # npapi-plugin has a template Makefile.am, but don't use it directly
@@ -100,8 +100,6 @@ for plugin in ${used_plugins}; do
 				plugin_error_or_ignore "libzeitgeist not found"
 				continue
 			fi
-		;;
-		eog)
 		;;
 		rhythmbox)
 		;;
@@ -304,10 +302,6 @@ if test "x${PLUGINS}" != "x" ; then
                                         	chrome)
                                         		AC_CONFIG_FILES([chrome/Makefile])
                                         		extra_subdirs="${extra_subdirs} npapi-plugin"
-                                        		continue 2
-                                        	;;
-                                        	eog)
-                                        		AC_CONFIG_FILES([eog/Makefile])
                                         		continue 2
                                         	;;
                                         	firefox)
