@@ -8,10 +8,6 @@ use_id = vim.eval("a:vim_use_id")
 filename = vim.eval("a:filename")
 precond = os.getuid() != 0 and os.getenv('DBUS_SESSION_BUS_ADDRESS') != None
 if got_zeitgeist and precond and filename:
-  # We reconnect on every attempt so that we cope cleanly with the zeitgeist
-  # server failing and being restarted; the Python client library will currently
-  # just throw away messages to a dead server (as of 2011-05-12).
-  zeitgeistclient = ZeitgeistClient()
   use = {
     "read" : Interpretation.ACCESS_EVENT,
     "new" : Interpretation.CREATE_EVENT,
@@ -50,15 +46,15 @@ endfunction
 python << endpython
 import os
 import time
+import dbus
 import vim
 try:
   import gio
   from zeitgeist.client import ZeitgeistClient
   from zeitgeist.datamodel import Subject, Event, Interpretation, Manifestation
+  zeitgeistclient = ZeitgeistClient()
   got_zeitgeist = True
-except RuntimeError, e:
-  got_zeitgeist = False
-except ImportError, e:
+except (RuntimeError, ImportError, dbus.exceptions.DBusException):
   got_zeitgeist = False
 endpython
 augroup zeitgeist
