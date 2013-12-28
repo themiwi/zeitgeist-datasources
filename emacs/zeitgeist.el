@@ -24,6 +24,12 @@
 (require 'cl)
 (require 'dbus)
 
+(defvar zeitgeist-emacs-application "application://emacs23.desktop")
+
+(defvar zeitgeist-ignore-files-re nil)
+
+(defvar zeitgeist-prevent-send nil)
+
 ;;** General Functions
 
 (defun zeitgeist-call (method &rest args)
@@ -139,8 +145,8 @@
 	  event-interpr               ;; Event Interpretation (what happened?)
 	  ;; Manifestation
 	  "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity"
-	  ;; Actor (the application, aka emacs)
-	  "application://emacs23.desktop")
+	  zeitgeist-emacs-application ;; Actor (the application, aka emacs)
+      )
 	 ;; List of subjects (aas)
 	 (list
 	  (list
@@ -159,31 +165,37 @@
   "Send zeitgeist the EVENT with PROPS."
   (let ((event-interpretation (zeitgeist-event-interpretation event)))
     (condition-case err
-	(case event
-	  ;; File handling events
-	  ((zeitgeist-open-file-event
-	    zeitgeist-close-file-event
-	    zeitgeist-create-file-event
-	    zeitgeist-modify-file-event)
-	   (zeitgeist-call
-	    "InsertEvents"
-	    (zeitgeist-create-event
-	     event-interpretation
-	     (concat "file://" (plist-get props :file))
-	     "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Document"
-	     "http://www.semanticdesktop.org/ontologies/nfo#FileDataObject"
-	     (concat "file://" (file-name-directory (plist-get props :file)))
-	     (zeitgeist-get-mime-type)
-	     (file-name-nondirectory
-	      (file-name-sans-versions (plist-get props :file)))
-	     "")))
-	  ;; Email events
-	  ((zeitgeist-mail-read-event
-	    zeitgeist-mail-sent-event)
-	   ;; TODO: Implement me!
-	   ))
+        (case event
+          ;; File handling events
+          ((zeitgeist-open-file-event
+            zeitgeist-close-file-event
+            zeitgeist-create-file-event
+            zeitgeist-modify-file-event)
+           (unless (or zeitgeist-prevent-send
+                       (some (lambda (re)
+                               (string-match re (plist-get props :file)))
+                             zeitgeist-ignore-files-re))
+             (zeitgeist-call
+              "InsertEvents"
+              (zeitgeist-create-event
+               event-interpretation
+               (concat "file://" (plist-get props :file))
+               "http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Document"
+               "http://www.semanticdesktop.org/ontologies/nfo#FileDataObject"
+               (concat "file://" (file-name-directory (plist-get props :file)))
+               (zeitgeist-get-mime-type)
+               (file-name-nondirectory
+                (file-name-sans-versions (plist-get props :file)))
+               ""))
+             (message "zeitgeist event: %s" (file-name-nondirectory
+                                             (file-name-sans-versions (plist-get props :file))))))
+          ;; Email events
+          ((zeitgeist-mail-read-event
+            zeitgeist-mail-sent-event)
+           ;; TODO: Implement me!
+           ))
       ;; Ouch, something failed when trying to communicate with zeitgeist!
-      (error (message "ERROR (ZEITGEIST): %s" (cadr err))))))
+      (error (message "ERROR (ZEITGEIST): %s" (prin1-to-string err))))))
 
 ;;** Usual File Reading/Editing
 
